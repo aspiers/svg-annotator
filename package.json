@@ -12,7 +12,8 @@
     "start": "tsx src/index.ts",
     "dev": "tsx src/index.ts",
     "build": "tsc",
-    "test": "node --test"
+    "test": "node --test test/*.test.js",
+    "test:watch": "node --test --watch test/*.test.js"
   },
   "keywords": [
     "svg",
