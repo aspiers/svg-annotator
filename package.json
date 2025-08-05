@@ -1,0 +1,46 @@
+{
+  "name": "svg-annotator",
+  "version": "1.0.0",
+  "description": "TypeScript library and CLI tool for generating visual hull overlays around entity groups in SVG diagrams",
+  "type": "module",
+  "main": "lib/library.js",
+  "types": "lib/library.d.ts",
+  "bin": {
+    "svg-annotator": "./bin/svg-annotator"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "test": "node --test"
+  },
+  "keywords": [
+    "svg",
+    "concave-hull",
+    "erd",
+    "cli",
+    "annotation",
+    "visualization",
+    "typescript"
+  ],
+  "author": "Adam Spiers",
+  "license": "GPL-3.0",
+  "devDependencies": {
+    "@types/concaveman": "^1.1.6",
+    "@types/d3-color": "^3.1.3",
+    "@types/d3-shape": "^3.1.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/jsdom": "^21.1.0",
+    "@types/node": "^20.0.0",
+    "tsx": "^4.20.3",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "concaveman": "^1.2.1",
+    "d3-color": "^3.1.0",
+    "d3-shape": "^3.2.0",
+    "js-yaml": "^4.1.0",
+    "jsdom": "^23.0.0"
+  }
+}
