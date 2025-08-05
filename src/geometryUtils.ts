@@ -36,7 +36,7 @@ export class GeometryUtils {
 
     return {
       width: textWidth,
-      height: textHeight
+      height: textHeight,
     };
   }
 
@@ -72,12 +72,16 @@ export class GeometryUtils {
     );
 
     for (const candidate of candidates) {
-      const textDimensions = GeometryUtils.calculateBoundingBox(text, fontSize, fontFamily);
+      const textDimensions = GeometryUtils.calculateBoundingBox(
+        text,
+        fontSize,
+        fontFamily
+      );
       const textBox: BoundingBox = {
-        x: candidate.x - (textDimensions.width / 2) - collisionBuffer,
-        y: candidate.y - (textDimensions.height / 2) - collisionBuffer,
-        width: textDimensions.width + (collisionBuffer * 2),
-        height: textDimensions.height + (collisionBuffer * 2)
+        x: candidate.x - textDimensions.width / 2 - collisionBuffer,
+        y: candidate.y - textDimensions.height / 2 - collisionBuffer,
+        width: textDimensions.width + collisionBuffer * 2,
+        height: textDimensions.height + collisionBuffer * 2,
       };
 
       let hasCollision = false;
@@ -106,28 +110,32 @@ export class GeometryUtils {
     distanceIncrement: number
   ): Point[] {
     const candidates: Point[] = [];
-    
+
     // Start with the center itself
     candidates.push(center);
 
     // Generate positions in concentric circles
-    for (let distance = distanceIncrement; distance <= maxDistance; distance += distanceIncrement) {
+    for (
+      let distance = distanceIncrement;
+      distance <= maxDistance;
+      distance += distanceIncrement
+    ) {
       // 8 cardinal and ordinal directions
       const directions = [
-        { x: 0, y: -1 },    // North
-        { x: 1, y: -1 },    // Northeast
-        { x: 1, y: 0 },     // East
-        { x: 1, y: 1 },     // Southeast
-        { x: 0, y: 1 },     // South
-        { x: -1, y: 1 },    // Southwest
-        { x: -1, y: 0 },    // West
-        { x: -1, y: -1 },   // Northwest
+        { x: 0, y: -1 }, // North
+        { x: 1, y: -1 }, // Northeast
+        { x: 1, y: 0 }, // East
+        { x: 1, y: 1 }, // Southeast
+        { x: 0, y: 1 }, // South
+        { x: -1, y: 1 }, // Southwest
+        { x: -1, y: 0 }, // West
+        { x: -1, y: -1 }, // Northwest
       ];
 
       for (const dir of directions) {
         candidates.push({
-          x: center.x + (dir.x * distance),
-          y: center.y + (dir.y * distance)
+          x: center.x + dir.x * distance,
+          y: center.y + dir.y * distance,
         });
       }
     }

@@ -9,22 +9,26 @@ describe('SplineGenerator', () => {
       { x: 0, y: 0 },
       { x: 10, y: 0 },
       { x: 10, y: 10 },
-      { x: 0, y: 10 }
+      { x: 0, y: 10 },
     ];
     const config = { type: 'catmull-rom' };
 
     const result = generator.generateSpline(points, config);
-    
+
     assert.ok(result.pathData, 'Should return path data');
     assert.equal(result.curveType, 'catmull-rom', 'Should match curve type');
-    assert.deepEqual(result.originalPoints, points, 'Should preserve original points');
+    assert.deepEqual(
+      result.originalPoints,
+      points,
+      'Should preserve original points'
+    );
   });
 
   test('should throw error for insufficient points', () => {
     const generator = new SplineGenerator();
     const points = [
       { x: 0, y: 0 },
-      { x: 1, y: 1 }
+      { x: 1, y: 1 },
     ];
     const config = { type: 'linear' };
 
@@ -36,7 +40,7 @@ describe('SplineGenerator', () => {
 
   test('should create valid spline config', () => {
     const config = SplineGenerator.createConfig('cardinal', 0.8, 0.3);
-    
+
     assert.equal(config.type, 'cardinal');
     assert.equal(config.tension, 0.8);
     assert.equal(config.alpha, 0.3);

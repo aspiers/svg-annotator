@@ -1,6 +1,6 @@
 /**
  * SVG Annotator Library
- * 
+ *
  * A TypeScript library for generating visual hull overlays around entity groups in SVG diagrams.
  * Provides both programmatic API and CLI interface for creating concave hulls, smooth splines,
  * and watercolor effects with text collision avoidance.
@@ -28,7 +28,7 @@ import type {
   CurveType,
   SplineConfig,
   SplineResult,
-  TextBoundingBox
+  TextBoundingBox,
 } from './types.js';
 
 // Core classes
@@ -53,7 +53,7 @@ export type {
   CurveType,
   SplineConfig,
   SplineResult,
-  TextBoundingBox
+  TextBoundingBox,
 };
 
 // Filter interfaces
@@ -93,39 +93,49 @@ export class SVGAnnotator {
       curveType = 'catmull-rom',
       padding = 10,
       color = '#FF0000',
-      enableWatercolor = true
+      enableWatercolor = true,
     } = options;
 
     // Extract points from entities
     const points = this.parser.extractPointsFromEntityGroups(entityNames);
-    
+
     // Add padding if specified
-    const paddedPoints = padding > 0 ? HullPadding.addPadding(points, padding) : points;
-    
+    const paddedPoints =
+      padding > 0 ? HullPadding.addPadding(points, padding) : points;
+
     // Calculate hull
-    const hull = this.hullCalculator.calculateConcaveHull(paddedPoints, concavity);
-    
+    const hull = this.hullCalculator.calculateConcaveHull(
+      paddedPoints,
+      concavity
+    );
+
     // Generate spline
     const splineConfig = SplineGenerator.createConfig(curveType);
-    const spline = this.splineGenerator.generateSpline(hull.points, splineConfig);
-    
+    const spline = this.splineGenerator.generateSpline(
+      hull.points,
+      splineConfig
+    );
+
     // Generate watercolor filter if enabled
     let filterId: string | undefined;
     let filterDef: string | undefined;
-    
+
     if (enableWatercolor) {
       filterId = WatercolorFilters.generateFilterId('hull');
       const filterConfig = WatercolorFilters.createDefaultConfig(hull.area);
-      filterDef = WatercolorFilters.generateWatercolorFilter(filterId, filterConfig);
+      filterDef = WatercolorFilters.generateWatercolorFilter(
+        filterId,
+        filterConfig
+      );
     }
-    
+
     return {
       pathData: spline.pathData,
       hull,
       spline,
       filterId,
       filterDef,
-      color: ColorUtils.toHex(color)
+      color: ColorUtils.toHex(color),
     };
   }
 
@@ -139,22 +149,23 @@ export class SVGAnnotator {
     for (const focusArea of focusAreas) {
       const overlay = this.generateHullOverlay(focusArea.areas, {
         color: focusArea.color,
-        enableWatercolor: true
+        enableWatercolor: true,
       });
 
       // Find optimal label position
       const centroid = GeometryUtils.calculateCentroid(overlay.hull.points);
-      const labelPosition = this.collisionDetector.findNearestNonCollidingPosition(
-        focusArea.name,
-        16, // fontSize
-        'Arial', // fontFamily
-        centroid
-      );
+      const labelPosition =
+        this.collisionDetector.findNearestNonCollidingPosition(
+          focusArea.name,
+          16, // fontSize
+          'Arial', // fontFamily
+          centroid
+        );
 
       results.push({
         ...overlay,
         focusArea,
-        labelPosition
+        labelPosition,
       });
     }
 

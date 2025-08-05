@@ -27,8 +27,14 @@ describe('ColorUtils', () => {
     assert.ok(ColorUtils.isValidColor('red'), 'Named color should be valid');
     assert.ok(ColorUtils.isValidColor('#FF0000'), 'Hex color should be valid');
     assert.ok(ColorUtils.isValidColor('#f00'), '3-digit hex should be valid');
-    assert.ok(ColorUtils.isValidColor('rgb(255, 0, 0)'), 'RGB color should be valid');
-    assert.ok(!ColorUtils.isValidColor('invalid'), 'Invalid color should return false');
+    assert.ok(
+      ColorUtils.isValidColor('rgb(255, 0, 0)'),
+      'RGB color should be valid'
+    );
+    assert.ok(
+      !ColorUtils.isValidColor('invalid'),
+      'Invalid color should return false'
+    );
   });
 
   test('should get supported color names', () => {

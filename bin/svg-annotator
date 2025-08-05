@@ -2,7 +2,7 @@
 
 /**
  * SVG Annotator CLI Executable
- * 
+ *
  * This is the main executable wrapper for the svg-annotator CLI tool.
  * It loads and runs the compiled JavaScript CLI.
  */
@@ -20,9 +20,9 @@ const cliPath = resolve(__dirname, '../lib/index.js');
 async function runCLI() {
   try {
     const { spawn } = await import('child_process');
-    
+
     const child = spawn('node', [cliPath, ...process.argv.slice(2)], {
-      stdio: 'inherit'
+      stdio: 'inherit',
     });
 
     child.on('exit', (code) => {

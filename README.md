@@ -69,7 +69,7 @@ const result = annotator.generateHullOverlay(['Entity1', 'Entity2'], {
   curveType: 'catmull-rom',
   padding: 15,
   color: '#FF6B6B',
-  enableWatercolor: true
+  enableWatercolor: true,
 });
 
 console.log(result.pathData); // SVG path for the hull
@@ -85,19 +85,19 @@ svg-annotator [entity-names...] [options]
 
 ### Options
 
-| Option | Description | Default |
-|--------|-------------|---------|
-| `-s, --svg <file>` | SVG file path | `ERD.svg` |
-| `-c, --concavity <number>` | Concavity parameter (lower = more concave) | `20` |
-| `-l, --length-threshold <number>` | Length threshold for edge filtering | `0` |
-| `--curve-type <type>` | Curve type: linear, catmull-rom, cardinal, basis, basis-closed | `catmull-rom` |
-| `--curve-tension <number>` | Tension for cardinal curves (0.0-1.0) | `0.2` |
-| `--curve-alpha <number>` | Alpha for Catmull-Rom curves (0.0-1.0) | `0.5` |
-| `-p, --padding <number>` | Padding around hull in SVG units | `15` |
-| `--areas <file>` | YAML file containing focus area definitions | - |
-| `-v, --verbose` | Verbose output | `false` |
-| `-h, --help` | Display help information | - |
-| `-V, --version` | Display version number | - |
+| Option                            | Description                                                    | Default       |
+| --------------------------------- | -------------------------------------------------------------- | ------------- |
+| `-s, --svg <file>`                | SVG file path                                                  | `ERD.svg`     |
+| `-c, --concavity <number>`        | Concavity parameter (lower = more concave)                     | `20`          |
+| `-l, --length-threshold <number>` | Length threshold for edge filtering                            | `0`           |
+| `--curve-type <type>`             | Curve type: linear, catmull-rom, cardinal, basis, basis-closed | `catmull-rom` |
+| `--curve-tension <number>`        | Tension for cardinal curves (0.0-1.0)                          | `0.2`         |
+| `--curve-alpha <number>`          | Alpha for Catmull-Rom curves (0.0-1.0)                         | `0.5`         |
+| `-p, --padding <number>`          | Padding around hull in SVG units                               | `15`          |
+| `--areas <file>`                  | YAML file containing focus area definitions                    | -             |
+| `-v, --verbose`                   | Verbose output                                                 | `false`       |
+| `-h, --help`                      | Display help information                                       | -             |
+| `-V, --version`                   | Display version number                                         | -             |
 
 ### Examples
 
@@ -142,7 +142,7 @@ Focus areas allow you to define reusable entity groupings with custom colors and
     - RewardAllocation
 
 - name: Impact Tracking
-  color: "#E3F2FD"
+  color: '#E3F2FD'
   areas:
     - ImpactContributor
     - ImpactEvidence
@@ -175,6 +175,7 @@ const annotator = new SVGAnnotator('path/to/diagram.svg');
 Generate a hull overlay for specified entities.
 
 **Parameters:**
+
 - `entityNames: string[]` - Array of entity names
 - `options: object` - Configuration options
   - `concavity?: number` - Concavity parameter (default: 2)
@@ -190,6 +191,7 @@ Generate a hull overlay for specified entities.
 Generate overlays for all focus areas from a YAML file.
 
 **Parameters:**
+
 - `focusAreasFilePath: string` - Path to YAML configuration file
 
 **Returns:** Array of overlay results with label positioning.
@@ -204,7 +206,7 @@ import {
   HullCalculator,
   SplineGenerator,
   WatercolorFilters,
-  TextCollisionDetector
+  TextCollisionDetector,
 } from 'svg-annotator';
 
 // Parse SVG and extract entity points
@@ -240,13 +242,13 @@ Your SVG diagrams should have entity groups marked with `data-entity` attributes
 
 ## Curve Types
 
-| Type | Description | Best For |
-|------|-------------|----------|
-| `linear` | Straight line segments | Simple, geometric shapes |
-| `catmull-rom` | Smooth curve through all points | Natural, flowing boundaries |
-| `cardinal` | Smooth curve with tension control | Customizable smoothness |
-| `basis` | B-spline (very smooth) | Highly organic shapes |
-| `basis-closed` | Closed B-spline curve | Enclosed areas |
+| Type           | Description                       | Best For                    |
+| -------------- | --------------------------------- | --------------------------- |
+| `linear`       | Straight line segments            | Simple, geometric shapes    |
+| `catmull-rom`  | Smooth curve through all points   | Natural, flowing boundaries |
+| `cardinal`     | Smooth curve with tension control | Customizable smoothness     |
+| `basis`        | B-spline (very smooth)            | Highly organic shapes       |
+| `basis-closed` | Closed B-spline curve             | Enclosed areas              |
 
 ## Development
 
@@ -287,6 +289,7 @@ GPL-3.0 License - see [LICENSE](LICENSE) file for details.
 ## Changelog
 
 ### v1.0.0
+
 - Initial release
 - Concave hull generation
 - Multiple curve types

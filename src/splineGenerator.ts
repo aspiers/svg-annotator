@@ -1,4 +1,11 @@
-import { line, curveCatmullRom, curveCardinal, curveBasis, curveBasisClosed, curveLinear } from 'd3-shape';
+import {
+  line,
+  curveCatmullRom,
+  curveCardinal,
+  curveBasis,
+  curveBasisClosed,
+  curveLinear,
+} from 'd3-shape';
 import { Point, CurveType, SplineConfig, SplineResult } from './types.js';
 
 export class SplineGenerator {
@@ -14,12 +21,13 @@ export class SplineGenerator {
     }
 
     // Convert points to d3-shape format [x, y][]
-    const d3Points: [number, number][] = points.map(p => [p.x, p.y]);
+    const d3Points: [number, number][] = points.map((p) => [p.x, p.y]);
 
     // Ensure the path is closed by adding the first point at the end if needed
     const firstPoint = d3Points[0];
     const lastPoint = d3Points[d3Points.length - 1];
-    const needsClosure = firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1];
+    const needsClosure =
+      firstPoint[0] !== lastPoint[0] || firstPoint[1] !== lastPoint[1];
 
     if (needsClosure) {
       d3Points.push(firstPoint);
@@ -27,8 +35,8 @@ export class SplineGenerator {
 
     // Create line generator with appropriate curve
     const lineGenerator = line<[number, number]>()
-      .x(d => d[0])
-      .y(d => d[1])
+      .x((d) => d[0])
+      .y((d) => d[1])
       .curve(this.getCurveFunction(config));
 
     // Generate the path data
@@ -99,11 +107,11 @@ export class SplineGenerator {
    */
   static getCurveTypes(): Record<CurveType, string> {
     return {
-      'linear': 'Linear segments (no smoothing)',
+      linear: 'Linear segments (no smoothing)',
       'catmull-rom': 'Catmull-Rom spline (smooth, passes through all points)',
-      'cardinal': 'Cardinal spline (smooth, customizable tension)',
-      'basis': 'B-spline basis (very smooth, may not pass through points)',
-      'basis-closed': 'Closed B-spline basis (smooth closed curve)'
+      cardinal: 'Cardinal spline (smooth, customizable tension)',
+      basis: 'B-spline basis (very smooth, may not pass through points)',
+      'basis-closed': 'Closed B-spline basis (smooth closed curve)',
     };
   }
 
@@ -111,13 +119,24 @@ export class SplineGenerator {
    * Validate spline configuration
    */
   static validateConfig(config: SplineConfig): void {
-    const validTypes: CurveType[] = ['linear', 'catmull-rom', 'cardinal', 'basis', 'basis-closed'];
+    const validTypes: CurveType[] = [
+      'linear',
+      'catmull-rom',
+      'cardinal',
+      'basis',
+      'basis-closed',
+    ];
 
     if (!validTypes.includes(config.type)) {
-      throw new Error(`Invalid curve type: ${config.type}. Valid types: ${validTypes.join(', ')}`);
+      throw new Error(
+        `Invalid curve type: ${config.type}. Valid types: ${validTypes.join(', ')}`
+      );
     }
 
-    if (config.tension !== undefined && (config.tension < 0 || config.tension > 1)) {
+    if (
+      config.tension !== undefined &&
+      (config.tension < 0 || config.tension > 1)
+    ) {
       throw new Error('Tension must be between 0.0 and 1.0');
     }
 

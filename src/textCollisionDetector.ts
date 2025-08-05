@@ -23,8 +23,8 @@ export class TextCollisionDetector {
         elements.push({
           x: element.bbox.x - this.collisionBuffer,
           y: element.bbox.y - this.collisionBuffer,
-          width: element.bbox.width + (this.collisionBuffer * 2),
-          height: element.bbox.height + (this.collisionBuffer * 2)
+          width: element.bbox.width + this.collisionBuffer * 2,
+          height: element.bbox.height + this.collisionBuffer * 2,
         });
       }
     }
@@ -33,12 +33,15 @@ export class TextCollisionDetector {
     const allElements = this.svgParser.getAllElements();
     for (const element of allElements) {
       // Only consider simple shapes and text elements, skip complex paths
-      if (this.shouldConsiderForCollision(element) && this.isValidBoundingBox(element.bbox)) {
+      if (
+        this.shouldConsiderForCollision(element) &&
+        this.isValidBoundingBox(element.bbox)
+      ) {
         elements.push({
           x: element.bbox.x - this.collisionBuffer,
           y: element.bbox.y - this.collisionBuffer,
-          width: element.bbox.width + (this.collisionBuffer * 2),
-          height: element.bbox.height + (this.collisionBuffer * 2)
+          width: element.bbox.width + this.collisionBuffer * 2,
+          height: element.bbox.height + this.collisionBuffer * 2,
         });
       }
     }
@@ -107,10 +110,10 @@ export class TextCollisionDetector {
       text,
       fontSize,
       fontFamily,
-      x: position.x - (textWidth / 2), // text-anchor: middle
-      y: position.y - (textHeight / 2), // dominant-baseline: middle
+      x: position.x - textWidth / 2, // text-anchor: middle
+      y: position.y - textHeight / 2, // dominant-baseline: middle
       width: textWidth,
-      height: textHeight
+      height: textHeight,
     };
   }
 
@@ -157,23 +160,27 @@ export class TextCollisionDetector {
     candidates.push(centroid);
 
     // Generate positions in concentric circles
-    for (let distance = this.distanceIncrement; distance <= this.maxSearchDistance; distance += this.distanceIncrement) {
+    for (
+      let distance = this.distanceIncrement;
+      distance <= this.maxSearchDistance;
+      distance += this.distanceIncrement
+    ) {
       // 8 cardinal and ordinal directions
       const directions = [
-        { x: 0, y: -1 },    // North
-        { x: 1, y: -1 },    // Northeast
-        { x: 1, y: 0 },     // East
-        { x: 1, y: 1 },     // Southeast
-        { x: 0, y: 1 },     // South
-        { x: -1, y: 1 },    // Southwest
-        { x: -1, y: 0 },    // West
-        { x: -1, y: -1 },   // Northwest
+        { x: 0, y: -1 }, // North
+        { x: 1, y: -1 }, // Northeast
+        { x: 1, y: 0 }, // East
+        { x: 1, y: 1 }, // Southeast
+        { x: 0, y: 1 }, // South
+        { x: -1, y: 1 }, // Southwest
+        { x: -1, y: 0 }, // West
+        { x: -1, y: -1 }, // Northwest
       ];
 
       for (const dir of directions) {
         candidates.push({
-          x: centroid.x + (dir.x * distance),
-          y: centroid.y + (dir.y * distance)
+          x: centroid.x + dir.x * distance,
+          y: centroid.y + dir.y * distance,
         });
       }
     }
@@ -192,11 +199,23 @@ export class TextCollisionDetector {
   ): Point {
     const candidates = this.generateCandidatePositions(preferredPosition);
     let bestPosition = preferredPosition;
-    let bestScore = this.calculatePositionScore(text, fontSize, fontFamily, preferredPosition, preferredPosition);
+    let bestScore = this.calculatePositionScore(
+      text,
+      fontSize,
+      fontFamily,
+      preferredPosition,
+      preferredPosition
+    );
 
     for (const candidate of candidates) {
-      const score = this.calculatePositionScore(text, fontSize, fontFamily, candidate, preferredPosition);
-      
+      const score = this.calculatePositionScore(
+        text,
+        fontSize,
+        fontFamily,
+        candidate,
+        preferredPosition
+      );
+
       if (score < bestScore) {
         bestScore = score;
         bestPosition = candidate;
@@ -204,7 +223,12 @@ export class TextCollisionDetector {
     }
 
     // Register the chosen position so future labels avoid it
-    const chosenBox = this.calculateTextBoundingBox(text, fontSize, fontFamily, bestPosition);
+    const chosenBox = this.calculateTextBoundingBox(
+      text,
+      fontSize,
+      fontFamily,
+      bestPosition
+    );
     this.existingTextLabels.push(chosenBox);
     return bestPosition;
   }
@@ -220,12 +244,17 @@ export class TextCollisionDetector {
     position: Point,
     preferredPosition: Point
   ): number {
-    const textBox = this.calculateTextBoundingBox(text, fontSize, fontFamily, position);
-    
+    const textBox = this.calculateTextBoundingBox(
+      text,
+      fontSize,
+      fontFamily,
+      position
+    );
+
     // Count collisions with existing elements
     let collisionCount = 0;
     let totalCollisionArea = 0;
-    
+
     for (const element of this.existingSvgElements) {
       if (this.rectanglesOverlap(textBox, element)) {
         collisionCount++;
@@ -234,27 +263,31 @@ export class TextCollisionDetector {
         totalCollisionArea += overlapArea;
       }
     }
-    
+
     // Check collision with other text labels (these are more important to avoid)
     let textCollisionCount = 0;
     for (const existingLabel of this.existingTextLabels) {
       if (this.rectanglesOverlap(textBox, existingLabel)) {
         textCollisionCount++;
-        totalCollisionArea += this.calculateOverlapArea(textBox, existingLabel) * 2; // Weight text collisions more heavily
+        totalCollisionArea +=
+          this.calculateOverlapArea(textBox, existingLabel) * 2; // Weight text collisions more heavily
       }
     }
-    
+
     // Calculate distance from preferred position
     const distance = Math.sqrt(
-      Math.pow(position.x - preferredPosition.x, 2) + 
-      Math.pow(position.y - preferredPosition.y, 2)
+      Math.pow(position.x - preferredPosition.x, 2) +
+        Math.pow(position.y - preferredPosition.y, 2)
     );
-    
+
     // Score formula: prioritize staying close to centroid, but penalize collisions
     // Text collisions are weighted more heavily than element collisions
-    const collisionPenalty = (collisionCount * 50) + (textCollisionCount * 300) + (totalCollisionArea * 0.05);
+    const collisionPenalty =
+      collisionCount * 50 +
+      textCollisionCount * 300 +
+      totalCollisionArea * 0.05;
     const distancePenalty = distance * 3; // Higher penalty for distance to keep labels closer
-    
+
     return distancePenalty + collisionPenalty;
   }
 
@@ -265,12 +298,15 @@ export class TextCollisionDetector {
     const overlapLeft = Math.max(rect1.x, rect2.x);
     const overlapRight = Math.min(rect1.x + rect1.width, rect2.x + rect2.width);
     const overlapTop = Math.max(rect1.y, rect2.y);
-    const overlapBottom = Math.min(rect1.y + rect1.height, rect2.y + rect2.height);
-    
+    const overlapBottom = Math.min(
+      rect1.y + rect1.height,
+      rect2.y + rect2.height
+    );
+
     if (overlapLeft < overlapRight && overlapTop < overlapBottom) {
       return (overlapRight - overlapLeft) * (overlapBottom - overlapTop);
     }
-    
+
     return 0;
   }
 

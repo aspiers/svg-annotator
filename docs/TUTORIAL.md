@@ -21,25 +21,25 @@ Let's create a simple SVG file to work with. Save this as `sample-diagram.svg`:
     <rect x="20" y="20" width="120" height="60" fill="#E3F2FD" stroke="#1976D2"/>
     <text x="80" y="55" text-anchor="middle" font-family="Arial" font-size="14">Treasury</text>
   </g>
-  
+
   <!-- Funding Sources -->
   <g data-entity="FundingSource">
     <rect x="20" y="120" width="120" height="60" fill="#E8F5E8" stroke="#388E3C"/>
     <text x="80" y="155" text-anchor="middle" font-family="Arial" font-size="14">Funding Source</text>
   </g>
-  
+
   <!-- Impact Measurement -->
   <g data-entity="ImpactMeasurer">
     <rect x="200" y="20" width="140" height="60" fill="#FFF3E0" stroke="#F57C00"/>
     <text x="270" y="55" text-anchor="middle" font-family="Arial" font-size="14">Impact Measurer</text>
   </g>
-  
+
   <!-- External World -->
   <g data-entity="ExternalWorld">
     <rect x="200" y="120" width="140" height="60" fill="#FCE4EC" stroke="#C2185B"/>
     <text x="270" y="155" text-anchor="middle" font-family="Arial" font-size="14">External World</text>
   </g>
-  
+
   <!-- Evaluator -->
   <g data-entity="Evaluator">
     <rect x="110" y="220" width="120" height="60" fill="#F3E5F5" stroke="#7B1FA2"/>
@@ -59,6 +59,7 @@ svg-annotator Treasury --svg sample-diagram.svg > treasury-hull.svg
 ```
 
 This creates a concave hull around the Treasury entity with default settings:
+
 - Catmull-Rom spline curve
 - 15px padding
 - Concavity of 20
@@ -73,6 +74,7 @@ svg-annotator Treasury FundingSource --svg sample-diagram.svg --verbose > financ
 ```
 
 The `--verbose` flag shows detailed information about the processing:
+
 - Number of points found
 - Hull calculation results
 - Area and perimeter measurements
@@ -105,6 +107,7 @@ svg-annotator Treasury --concavity 50 --padding 30 --svg sample-diagram.svg > lo
 ```
 
 **Concavity Parameter:**
+
 - Lower values (1-10): Very tight, follows entity contours closely
 - Medium values (20-50): Balanced, natural-looking hulls
 - Higher values (100+): Looser, more convex hulls
@@ -115,19 +118,19 @@ Create a focus areas configuration file `tutorial-areas.yml`:
 
 ```yaml
 - name: Financial
-  color: "#4CAF50"
+  color: '#4CAF50'
   areas:
     - Treasury
     - FundingSource
 
 - name: Measurement
-  color: "#FF9800"
+  color: '#FF9800'
   areas:
     - ImpactMeasurer
     - Evaluator
 
 - name: External
-  color: "#E91E63"
+  color: '#E91E63'
   url: https://example.com/external-docs
   areas:
     - ExternalWorld
@@ -170,7 +173,7 @@ const treasuryHull = annotator.generateHullOverlay(['Treasury'], {
   curveType: 'catmull-rom',
   padding: 20,
   color: '#4CAF50',
-  enableWatercolor: true
+  enableWatercolor: true,
 });
 
 console.log('Treasury hull path:', treasuryHull.pathData);
@@ -180,12 +183,12 @@ console.log('Hull area:', treasuryHull.hull.area);
 ### Advanced Library Usage
 
 ```typescript
-import { 
-  SVGParser, 
-  HullCalculator, 
+import {
+  SVGParser,
+  HullCalculator,
   SplineGenerator,
   WatercolorFilters,
-  GeometryUtils 
+  GeometryUtils,
 } from 'svg-annotator';
 
 // Step-by-step hull generation
@@ -194,13 +197,18 @@ const calculator = new HullCalculator();
 const generator = new SplineGenerator();
 
 // Extract points from entities
-const points = parser.extractPointsFromEntityGroups(['Treasury', 'FundingSource']);
+const points = parser.extractPointsFromEntityGroups([
+  'Treasury',
+  'FundingSource',
+]);
 console.log(`Extracted ${points.length} points`);
 
 // Calculate concave hull
 const hull = calculator.calculateConcaveHull(points, 15);
 console.log(`Hull has ${hull.points.length} vertices`);
-console.log(`Area: ${hull.area.toFixed(2)}, Perimeter: ${hull.perimeter.toFixed(2)}`);
+console.log(
+  `Area: ${hull.area.toFixed(2)}, Perimeter: ${hull.perimeter.toFixed(2)}`
+);
 
 // Generate smooth spline
 const splineConfig = { type: 'cardinal', tension: 0.3 };
@@ -210,11 +218,16 @@ console.log('Spline path:', spline.pathData);
 // Create watercolor filter
 const filterId = WatercolorFilters.generateFilterId('financial');
 const filterConfig = WatercolorFilters.createDefaultConfig(hull.area);
-const filterSVG = WatercolorFilters.generateWatercolorFilter(filterId, filterConfig);
+const filterSVG = WatercolorFilters.generateWatercolorFilter(
+  filterId,
+  filterConfig
+);
 
 // Calculate centroid for labeling
 const centroid = GeometryUtils.calculateCentroid(hull.points);
-console.log(`Label position: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`);
+console.log(
+  `Label position: (${centroid.x.toFixed(1)}, ${centroid.y.toFixed(1)})`
+);
 ```
 
 ### Building a Complete SVG Output
@@ -234,8 +247,8 @@ let svgOutput = `<?xml version="1.0" encoding="UTF-8"?>
 
 // Add filter definitions
 const filterDefs = overlays
-  .map(overlay => overlay.filterDef)
-  .filter(def => def)
+  .map((overlay) => overlay.filterDef)
+  .filter((def) => def)
   .join('\n');
 
 if (filterDefs) {
@@ -245,25 +258,25 @@ if (filterDefs) {
 // Add hull paths
 for (const overlay of overlays) {
   const { pathData, color, filterId, focusArea } = overlay;
-  
+
   svgOutput += `\n<!-- Hull for ${focusArea.name} -->`;
-  
+
   if (focusArea.url) {
     svgOutput += `\n<a href="${focusArea.url}">`;
   }
-  
+
   svgOutput += `\n<path d="${pathData}" fill="${color}" fill-opacity="0.9" stroke="none"`;
-  
+
   if (filterId) {
     svgOutput += ` filter="url(#${filterId})"`;
   }
-  
+
   svgOutput += ` style="mix-blend-mode: multiply;"/>`;
-  
+
   if (focusArea.url) {
     svgOutput += '\n</a>';
   }
-  
+
   // Add label
   const { x, y } = overlay.labelPosition;
   svgOutput += `\n<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial" font-size="16" fill="#333" font-weight="bold">${focusArea.name}</text>`;
@@ -298,10 +311,10 @@ console.log('Annotated diagram saved to annotated-diagram.svg');
 ```typescript
 // Good color choices for overlays
 const colors = {
-  primary: '#2196F3',     // Blue - for main focus areas
-  secondary: '#4CAF50',   // Green - for supporting elements
-  accent: '#FF9800',      // Orange - for highlights
-  subtle: '#E0E0E0',      // Gray - for background groupings
+  primary: '#2196F3', // Blue - for main focus areas
+  secondary: '#4CAF50', // Green - for supporting elements
+  accent: '#FF9800', // Orange - for highlights
+  subtle: '#E0E0E0', // Gray - for background groupings
 };
 ```
 
@@ -314,24 +327,28 @@ const colors = {
 ### 5. Troubleshooting Common Issues
 
 **Hull looks jagged:**
+
 ```bash
 # Increase smoothness with cardinal curves
 svg-annotator MyEntity --curve-type cardinal --curve-tension 0.1
 ```
 
 **Hull is too tight:**
+
 ```bash
 # Increase concavity and padding
 svg-annotator MyEntity --concavity 30 --padding 25
 ```
 
 **Hull is too loose:**
+
 ```bash
 # Decrease concavity
 svg-annotator MyEntity --concavity 5 --padding 10
 ```
 
 **Text labels overlap:**
+
 - The collision avoidance system automatically handles this
 - For manual control, use the library API with custom positioning
 

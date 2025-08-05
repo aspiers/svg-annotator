@@ -24,7 +24,7 @@ describe('CLI Integration Tests', () => {
   function runCLI(args, input = null) {
     return new Promise((resolve, reject) => {
       const child = spawn('npx', ['tsx', 'src/index.ts', ...args], {
-        stdio: ['pipe', 'pipe', 'pipe']
+        stdio: ['pipe', 'pipe', 'pipe'],
       });
 
       let stdout = '';
@@ -53,24 +53,36 @@ describe('CLI Integration Tests', () => {
 
   test('should show help when --help flag is used', async () => {
     const result = await runCLI(['--help']);
-    
+
     assert.equal(result.code, 0, 'Help command should exit with code 0');
-    assert.ok(result.stdout.includes('svg-annotator'), 'Help should contain command name');
-    assert.ok(result.stdout.includes('Generate visual hull overlays'), 'Help should contain description');
+    assert.ok(
+      result.stdout.includes('svg-annotator'),
+      'Help should contain command name'
+    );
+    assert.ok(
+      result.stdout.includes('Generate visual hull overlays'),
+      'Help should contain description'
+    );
   });
 
   test('should show version when --version flag is used', async () => {
     const result = await runCLI(['--version']);
-    
+
     assert.equal(result.code, 0, 'Version command should exit with code 0');
-    assert.ok(result.stdout.trim().match(/^\d+\.\d+\.\d+$/), 'Should output valid version number');
+    assert.ok(
+      result.stdout.trim().match(/^\d+\.\d+\.\d+$/),
+      'Should output valid version number'
+    );
   });
 
   test('should handle missing SVG file gracefully', async () => {
     const result = await runCLI(['TestEntity', '--svg', 'nonexistent.svg']);
-    
+
     assert.equal(result.code, 1, 'Should exit with error code');
-    assert.ok(result.stderr.includes('SVG file not found'), 'Should report missing file');
+    assert.ok(
+      result.stderr.includes('SVG file not found'),
+      'Should report missing file'
+    );
   });
 
   test('should process valid entity with test SVG', async () => {
@@ -78,11 +90,19 @@ describe('CLI Integration Tests', () => {
     writeFileSync(testSvgPath, testSvg);
 
     try {
-      const result = await runCLI(['TestEntity', '--svg', testSvgPath, '--verbose']);
-      
+      const result = await runCLI([
+        'TestEntity',
+        '--svg',
+        testSvgPath,
+        '--verbose',
+      ]);
+
       assert.equal(result.code, 0, 'Should exit successfully');
       assert.ok(result.stdout.includes('<path'), 'Should output SVG path');
-      assert.ok(result.stderr.includes('Loading SVG file'), 'Should show verbose output');
+      assert.ok(
+        result.stderr.includes('Loading SVG file'),
+        'Should show verbose output'
+      );
     } finally {
       // Clean up test file
       if (existsSync(testSvgPath)) {
@@ -95,10 +115,19 @@ describe('CLI Integration Tests', () => {
     writeFileSync(testSvgPath, testSvg);
 
     try {
-      const result = await runCLI(['TestEntity', '--svg', testSvgPath, '--curve-type', 'invalid']);
-      
+      const result = await runCLI([
+        'TestEntity',
+        '--svg',
+        testSvgPath,
+        '--curve-type',
+        'invalid',
+      ]);
+
       assert.equal(result.code, 1, 'Should exit with error code');
-      assert.ok(result.stderr.includes('Invalid curve type'), 'Should report invalid curve type');
+      assert.ok(
+        result.stderr.includes('Invalid curve type'),
+        'Should report invalid curve type'
+      );
     } finally {
       if (existsSync(testSvgPath)) {
         unlinkSync(testSvgPath);
@@ -111,9 +140,12 @@ describe('CLI Integration Tests', () => {
 
     try {
       const result = await runCLI(['NonExistentEntity', '--svg', testSvgPath]);
-      
+
       assert.equal(result.code, 1, 'Should exit with error code');
-      assert.ok(result.stderr.includes('not found'), 'Should report entity not found');
+      assert.ok(
+        result.stderr.includes('not found'),
+        'Should report entity not found'
+      );
     } finally {
       if (existsSync(testSvgPath)) {
         unlinkSync(testSvgPath);

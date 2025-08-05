@@ -14,7 +14,6 @@ export class HullCalculator {
     concavity: number = 2,
     lengthThreshold: number = 0
   ): ConcaveHullResult {
-
     if (points.length < 3) {
       throw new Error('At least 3 points are required to calculate a hull');
     }
@@ -23,11 +22,13 @@ export class HullCalculator {
     const uniquePoints = this.removeDuplicatePoints(points);
 
     if (uniquePoints.length < 3) {
-      throw new Error('At least 3 unique points are required to calculate a hull');
+      throw new Error(
+        'At least 3 unique points are required to calculate a hull'
+      );
     }
 
     // Convert points to the format expected by concaveman [[x, y], [x, y], ...]
-    const inputPoints: number[][] = uniquePoints.map(p => [p.x, p.y]);
+    const inputPoints: number[][] = uniquePoints.map((p) => [p.x, p.y]);
 
     // Calculate concave hull
     const hullCoords = concaveman(inputPoints, concavity, lengthThreshold);
@@ -35,7 +36,7 @@ export class HullCalculator {
     // Convert back to Point objects
     const hullPoints: Point[] = hullCoords.map((coord: number[]) => ({
       x: coord[0],
-      y: coord[1]
+      y: coord[1],
     }));
 
     // Calculate area and perimeter
@@ -45,20 +46,24 @@ export class HullCalculator {
     return {
       points: hullPoints,
       area: Math.abs(area),
-      perimeter
+      perimeter,
     };
   }
 
   /**
    * Remove duplicate points from the array
    */
-  private removeDuplicatePoints(points: Point[], tolerance: number = 0.001): Point[] {
+  private removeDuplicatePoints(
+    points: Point[],
+    tolerance: number = 0.001
+  ): Point[] {
     const unique: Point[] = [];
 
     for (const point of points) {
-      const isDuplicate = unique.some(existing =>
-        Math.abs(existing.x - point.x) < tolerance &&
-        Math.abs(existing.y - point.y) < tolerance
+      const isDuplicate = unique.some(
+        (existing) =>
+          Math.abs(existing.x - point.x) < tolerance &&
+          Math.abs(existing.y - point.y) < tolerance
       );
 
       if (!isDuplicate) {
@@ -120,13 +125,17 @@ export class HullCalculator {
    */
   calculateConvexHull(points: Point[]): Point[] {
     if (points.length < 3) {
-      throw new Error('At least 3 points are required to calculate a convex hull');
+      throw new Error(
+        'At least 3 points are required to calculate a convex hull'
+      );
     }
 
     const uniquePoints = this.removeDuplicatePoints(points);
 
     if (uniquePoints.length < 3) {
-      throw new Error('At least 3 unique points are required to calculate a convex hull');
+      throw new Error(
+        'At least 3 unique points are required to calculate a convex hull'
+      );
     }
 
     // Find the bottom-most point (and leftmost in case of tie)
@@ -139,7 +148,7 @@ export class HullCalculator {
 
     // Sort points by polar angle with respect to start point
     const sortedPoints = uniquePoints
-      .filter(p => p !== start)
+      .filter((p) => p !== start)
       .sort((a, b) => {
         const angleA = Math.atan2(a.y - start.y, a.x - start.x);
         const angleB = Math.atan2(b.y - start.y, b.x - start.x);
@@ -151,11 +160,14 @@ export class HullCalculator {
 
     for (const point of sortedPoints) {
       // Remove points that make a right turn
-      while (hull.length > 1 && this.crossProduct(
-        hull[hull.length - 2],
-        hull[hull.length - 1],
-        point
-      ) <= 0) {
+      while (
+        hull.length > 1 &&
+        this.crossProduct(
+          hull[hull.length - 2],
+          hull[hull.length - 1],
+          point
+        ) <= 0
+      ) {
         hull.pop();
       }
       hull.push(point);

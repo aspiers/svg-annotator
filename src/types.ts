@@ -36,12 +36,17 @@ export interface ConcaveHullResult {
   perimeter: number;
 }
 
-export type CurveType = 'linear' | 'catmull-rom' | 'cardinal' | 'basis' | 'basis-closed';
+export type CurveType =
+  | 'linear'
+  | 'catmull-rom'
+  | 'cardinal'
+  | 'basis'
+  | 'basis-closed';
 
 export interface SplineConfig {
   type: CurveType;
-  tension?: number;  // For cardinal curves (0.0 to 1.0)
-  alpha?: number;    // For Catmull-Rom curves (0.0 to 1.0)
+  tension?: number; // For cardinal curves (0.0 to 1.0)
+  alpha?: number; // For Catmull-Rom curves (0.0 to 1.0)
 }
 
 export interface SplineResult {

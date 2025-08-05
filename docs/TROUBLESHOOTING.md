@@ -11,11 +11,13 @@ This guide covers common issues and their solutions when using SVG Annotator.
 **Solutions:**
 
 1. **Use npx instead** (recommended):
+
    ```bash
    npx svg-annotator MyEntity --svg diagram.svg
    ```
 
 2. **Fix npm permissions**:
+
    ```bash
    npm config set prefix ~/.npm-global
    export PATH=~/.npm-global/bin:$PATH
@@ -32,6 +34,7 @@ This guide covers common issues and their solutions when using SVG Annotator.
 **Problem:** `error TS2307: Cannot find module 'svg-annotator'`
 
 **Solution:** Ensure you have the correct imports:
+
 ```typescript
 // Correct imports
 import { SVGAnnotator } from 'svg-annotator';
@@ -50,11 +53,13 @@ import SVGAnnotator from 'svg-annotator'; // Wrong!
 **Solutions:**
 
 1. **Use absolute paths**:
+
    ```bash
    svg-annotator MyEntity --svg /full/path/to/diagram.svg
    ```
 
 2. **Check current directory**:
+
    ```bash
    ls -la *.svg  # List all SVG files
    svg-annotator MyEntity --svg ./diagram.svg
@@ -70,6 +75,7 @@ import SVGAnnotator from 'svg-annotator'; // Wrong!
 **Problem:** The specified entity doesn't exist in the SVG.
 
 **Diagnosis:**
+
 ```bash
 # Check what entities are available
 grep -o 'data-entity="[^"]*"' diagram.svg
@@ -78,27 +84,30 @@ grep -o 'data-entity="[^"]*"' diagram.svg
 **Solutions:**
 
 1. **Check entity names are exact matches** (case-sensitive):
+
    ```xml
    <!-- In SVG -->
    <g data-entity="Treasury">
-   
+
    <!-- CLI command -->
    svg-annotator Treasury  # Correct
    svg-annotator treasury  # Wrong - case mismatch
    ```
 
 2. **Use pattern matching to explore**:
+
    ```bash
    svg-annotator "*" --verbose  # Shows all available entities
    ```
 
 3. **Verify SVG structure**:
+
    ```xml
    <!-- Correct structure -->
    <g data-entity="MyEntity">
      <rect x="10" y="10" width="50" height="30"/>
    </g>
-   
+
    <!-- Incorrect - missing data-entity -->
    <g id="MyEntity">
      <rect x="10" y="10" width="50" height="30"/>
@@ -110,6 +119,7 @@ grep -o 'data-entity="[^"]*"' diagram.svg
 **Problem:** The entity group has insufficient geometric data.
 
 **Causes:**
+
 - Entity group contains only text elements
 - All elements have zero dimensions
 - Elements are positioned at the same coordinates
@@ -117,6 +127,7 @@ grep -o 'data-entity="[^"]*"' diagram.svg
 **Solutions:**
 
 1. **Add geometric elements**:
+
    ```xml
    <g data-entity="MyEntity">
      <!-- Add rectangles, circles, or paths -->
@@ -126,10 +137,11 @@ grep -o 'data-entity="[^"]*"' diagram.svg
    ```
 
 2. **Check element dimensions**:
+
    ```xml
    <!-- Problematic - zero dimensions -->
    <rect x="10" y="10" width="0" height="0"/>
-   
+
    <!-- Fixed -->
    <rect x="10" y="10" width="100" height="50"/>
    ```
@@ -139,6 +151,7 @@ grep -o 'data-entity="[^"]*"' diagram.svg
 **Problem:** Specified curve type is not supported.
 
 **Valid curve types:**
+
 - `linear`
 - `catmull-rom`
 - `cardinal`
@@ -146,6 +159,7 @@ grep -o 'data-entity="[^"]*"' diagram.svg
 - `basis-closed`
 
 **Solution:**
+
 ```bash
 # Correct
 svg-annotator MyEntity --curve-type catmell-rom
@@ -163,6 +177,7 @@ svg-annotator --help  # Lists all curve types
 **Solutions:**
 
 1. **Use smoother curve types**:
+
    ```bash
    # Try different curve types
    svg-annotator MyEntity --curve-type cardinal --curve-tension 0.1
@@ -170,6 +185,7 @@ svg-annotator --help  # Lists all curve types
    ```
 
 2. **Adjust concavity**:
+
    ```bash
    # Higher concavity = smoother curves
    svg-annotator MyEntity --concavity 50
@@ -188,11 +204,13 @@ svg-annotator --help  # Lists all curve types
 **Solutions:**
 
 1. **Increase padding**:
+
    ```bash
    svg-annotator MyEntity --padding 30
    ```
 
 2. **Increase concavity**:
+
    ```bash
    svg-annotator MyEntity --concavity 40
    ```
@@ -209,11 +227,13 @@ svg-annotator --help  # Lists all curve types
 **Solutions:**
 
 1. **Decrease concavity**:
+
    ```bash
    svg-annotator MyEntity --concavity 5
    ```
 
 2. **Reduce padding**:
+
    ```bash
    svg-annotator MyEntity --padding 5
    ```
@@ -228,6 +248,7 @@ svg-annotator --help  # Lists all curve types
 **Problem:** The watercolor filters don't appear in the output.
 
 **Causes:**
+
 - SVG viewer doesn't support filters
 - Filters are disabled
 - Color opacity is too low
@@ -256,9 +277,10 @@ svg-annotator --help  # Lists all curve types
 1. **The collision avoidance system handles this automatically**, but if issues persist:
 
 2. **Use library API for manual control**:
+
    ```typescript
    import { TextCollisionDetector, GeometryUtils } from 'svg-annotator';
-   
+
    const detector = new TextCollisionDetector(parser);
    const position = detector.findNearestNonCollidingPosition(
      'My Label',
@@ -285,7 +307,7 @@ color: red      # Should be indented
   areas:
     - Entity1
 
-# Wrong - missing quotes for special characters  
+# Wrong - missing quotes for special characters
 - name: Area with: colon
   color: red
 
@@ -304,6 +326,7 @@ color: red      # Should be indented
 **Solutions:**
 
 1. **Validate YAML syntax**:
+
    ```bash
    # Use online YAML validators or
    npx js-yaml focus-areas.yml
@@ -313,8 +336,8 @@ color: red      # Should be indented
 
 3. **Quote special characters**:
    ```yaml
-   - name: "Area: Special Characters"
-     color: "#FF0000"  # Quote hex colors
+   - name: 'Area: Special Characters'
+     color: '#FF0000' # Quote hex colors
    ```
 
 ### Invalid color values
@@ -322,18 +345,20 @@ color: red      # Should be indented
 **Problem:** `Invalid color` error in focus areas.
 
 **Valid color formats:**
+
 ```yaml
 - name: Area1
-  color: red           # Named color
-  
-- name: Area2  
-  color: "#FF0000"     # Hex color
-  
+  color: red # Named color
+
+- name: Area2
+  color: '#FF0000' # Hex color
+
 - name: Area3
-  color: "rgb(255,0,0)" # RGB color
+  color: 'rgb(255,0,0)' # RGB color
 ```
 
 **Invalid formats:**
+
 ```yaml
 color: FF0000          # Missing #
 color: red-ish         # Invalid name
@@ -347,10 +372,11 @@ color: hsl(0,100%,50%) # HSL not supported
 **Solutions:**
 
 1. **Check entity names in both files**:
+
    ```bash
    # List entities in SVG
    grep -o 'data-entity="[^"]*"' diagram.svg
-   
+
    # Check YAML content
    cat focus-areas.yml
    ```
@@ -360,7 +386,7 @@ color: hsl(0,100%,50%) # HSL not supported
    - name: AllImpact
      color: blue
      areas:
-       - "Impact*"  # Matches ImpactMeasurer, ImpactEvidence, etc.
+       - 'Impact*' # Matches ImpactMeasurer, ImpactEvidence, etc.
    ```
 
 ## Performance Issues
@@ -372,20 +398,23 @@ color: hsl(0,100%,50%) # HSL not supported
 **Solutions:**
 
 1. **Use simpler curve types**:
+
    ```bash
    svg-annotator MyEntity --curve-type linear  # Fastest
    ```
 
 2. **Reduce concavity** (higher values are slower):
+
    ```bash
    svg-annotator MyEntity --concavity 100  # Faster but less detailed
    ```
 
 3. **Process fewer entities at once**:
+
    ```bash
    # Instead of all at once
    svg-annotator Entity1 Entity2 Entity3 Entity4
-   
+
    # Process in groups
    svg-annotator Entity1 Entity2 > output1.svg
    svg-annotator Entity3 Entity4 > output2.svg
@@ -400,6 +429,7 @@ color: hsl(0,100%,50%) # HSL not supported
 **Solutions:**
 
 1. **Increase Node.js memory limit**:
+
    ```bash
    node --max-old-space-size=4096 $(which svg-annotator) MyEntity
    ```
@@ -422,6 +452,7 @@ color: hsl(0,100%,50%) # HSL not supported
 **Solutions:**
 
 1. **Check tsconfig.json**:
+
    ```json
    {
      "compilerOptions": {
@@ -433,10 +464,11 @@ color: hsl(0,100%,50%) # HSL not supported
    ```
 
 2. **Use correct import syntax**:
+
    ```typescript
    // ES modules (recommended)
    import { SVGAnnotator, HullCalculator } from 'svg-annotator';
-   
+
    // CommonJS (if needed)
    const { SVGAnnotator } = require('svg-annotator');
    ```
@@ -454,23 +486,26 @@ color: hsl(0,100%,50%) # HSL not supported
 **Solutions:**
 
 1. **Use absolute paths**:
+
    ```typescript
    import { resolve } from 'path';
-   
+
    const svgPath = resolve(__dirname, 'diagram.svg');
    const annotator = new SVGAnnotator(svgPath);
    ```
 
 2. **Check working directory**:
+
    ```typescript
    console.log('Current directory:', process.cwd());
    console.log('SVG path:', svgPath);
    ```
 
 3. **Verify file exists**:
+
    ```typescript
    import { existsSync } from 'fs';
-   
+
    if (!existsSync(svgPath)) {
      throw new Error(`SVG file not found: ${svgPath}`);
    }

@@ -38,7 +38,7 @@ export class WatercolorFilters {
    */
   static calculateHullArea(points: Point[]): number {
     if (points.length < 3) return 0;
-    
+
     // Shoelace formula for polygon area
     let area = 0;
     for (let i = 0; i < points.length; i++) {
@@ -55,7 +55,10 @@ export class WatercolorFilters {
    * @param config Filter configuration
    * @returns SVG filter definition string
    */
-  static generateWatercolorFilter(filterId: string, config: FilterConfig): string {
+  static generateWatercolorFilter(
+    filterId: string,
+    config: FilterConfig
+  ): string {
     return `<filter id="${filterId}" x="-50%" y="-50%" width="200%" height="200%">
       <feTurbulence
         type="fractalNoise"
@@ -107,7 +110,7 @@ export class WatercolorFilters {
     const filters = filterConfigs
       .map(({ id, config }) => this.generateWatercolorFilter(id, config))
       .join('\n');
-    
+
     return `<defs>${filters}</defs>`;
   }
 
@@ -117,13 +120,16 @@ export class WatercolorFilters {
    * @param enableTexture Whether to enable texture effects
    * @returns Default filter configuration
    */
-  static createDefaultConfig(area: number, enableTexture: boolean = true): FilterConfig {
+  static createDefaultConfig(
+    area: number,
+    enableTexture: boolean = true
+  ): FilterConfig {
     return {
       baseFrequency: 0.008,
       numOctaves: 3,
       blurDeviation: this.calculateBlurScale(area),
       displacementScale: 2,
-      enableTexture
+      enableTexture,
     };
   }
 }

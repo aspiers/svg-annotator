@@ -36,7 +36,7 @@ export class SVGParser {
         elements.push({
           tagName: element.tagName.toLowerCase(),
           attributes: this.getElementAttributes(element),
-          bbox
+          bbox,
         });
       }
     }
@@ -87,7 +87,7 @@ export class SVGParser {
         x: cx - r,
         y: cy - r,
         width: r * 2,
-        height: r * 2
+        height: r * 2,
       };
     } else {
       // ellipse
@@ -100,7 +100,7 @@ export class SVGParser {
         x: cx - rx,
         y: cy - ry,
         width: rx * 2,
-        height: ry * 2
+        height: ry * 2,
       };
     }
   }
@@ -120,7 +120,7 @@ export class SVGParser {
       x: minX,
       y: minY,
       width: maxX - minX,
-      height: maxY - minY
+      height: maxY - minY,
     };
   }
 
@@ -135,7 +135,7 @@ export class SVGParser {
       x,
       y: y - fontSize,
       width: textLength || (element.textContent?.length || 0) * fontSize * 0.6,
-      height: fontSize
+      height: fontSize,
     };
   }
 
@@ -147,8 +147,8 @@ export class SVGParser {
     const coords = this.extractPathCoordinates(d);
     if (coords.length === 0) return null;
 
-    const xs = coords.map(p => p.x);
-    const ys = coords.map(p => p.y);
+    const xs = coords.map((p) => p.x);
+    const ys = coords.map((p) => p.y);
     const minX = Math.min(...xs);
     const minY = Math.min(...ys);
     const maxX = Math.max(...xs);
@@ -158,7 +158,7 @@ export class SVGParser {
       x: minX,
       y: minY,
       width: maxX - minX,
-      height: maxY - minY
+      height: maxY - minY,
     };
   }
 
@@ -172,7 +172,7 @@ export class SVGParser {
         x: parseFloat(x),
         y: parseFloat(y),
         width: 0,
-        height: 0
+        height: 0,
       };
     }
 
@@ -188,7 +188,7 @@ export class SVGParser {
       for (let i = 0; i < numbers.length - 1; i += 2) {
         points.push({
           x: parseFloat(numbers[i]),
-          y: parseFloat(numbers[i + 1])
+          y: parseFloat(numbers[i + 1]),
         });
       }
     }
@@ -223,10 +223,10 @@ export class SVGParser {
       const bbox = element.bbox;
       // Add all four corners of each element's bounding box
       points.push(
-        { x: bbox.x, y: bbox.y },                           // top-left
-        { x: bbox.x + bbox.width, y: bbox.y },             // top-right
+        { x: bbox.x, y: bbox.y }, // top-left
+        { x: bbox.x + bbox.width, y: bbox.y }, // top-right
         { x: bbox.x + bbox.width, y: bbox.y + bbox.height }, // bottom-right
-        { x: bbox.x, y: bbox.y + bbox.height }             // bottom-left
+        { x: bbox.x, y: bbox.y + bbox.height } // bottom-left
       );
     }
 
@@ -266,7 +266,9 @@ export class SVGParser {
     }
 
     if (notFoundEntities.length > 0) {
-      throw new Error(`Entity groups not found: ${notFoundEntities.join(', ')}`);
+      throw new Error(
+        `Entity groups not found: ${notFoundEntities.join(', ')}`
+      );
     }
 
     if (allPoints.length === 0) {
@@ -310,8 +312,8 @@ export class SVGParser {
       throw new Error(`No elements found in entity group "${entityName}"`);
     }
 
-    const allX = elements.flatMap(e => [e.bbox.x, e.bbox.x + e.bbox.width]);
-    const allY = elements.flatMap(e => [e.bbox.y, e.bbox.y + e.bbox.height]);
+    const allX = elements.flatMap((e) => [e.bbox.x, e.bbox.x + e.bbox.width]);
+    const allY = elements.flatMap((e) => [e.bbox.y, e.bbox.y + e.bbox.height]);
     const minX = Math.min(...allX);
     const minY = Math.min(...allY);
     const maxX = Math.max(...allX);
@@ -324,8 +326,8 @@ export class SVGParser {
         x: minX,
         y: minY,
         width: maxX - minX,
-        height: maxY - minY
-      }
+        height: maxY - minY,
+      },
     };
   }
 
@@ -342,7 +344,7 @@ export class SVGParser {
         textElements.push({
           tagName: textElement.tagName.toLowerCase(),
           attributes: this.getElementAttributes(textElement),
-          bbox
+          bbox,
         });
       }
     }
@@ -359,7 +361,10 @@ export class SVGParser {
 
     for (const element of allElements) {
       // Skip the root SVG element and group containers
-      if (element.tagName.toLowerCase() === 'svg' || element.tagName.toLowerCase() === 'g') {
+      if (
+        element.tagName.toLowerCase() === 'svg' ||
+        element.tagName.toLowerCase() === 'g'
+      ) {
         continue;
       }
 
@@ -368,7 +373,7 @@ export class SVGParser {
         elements.push({
           tagName: element.tagName.toLowerCase(),
           attributes: this.getElementAttributes(element),
-          bbox
+          bbox,
         });
       }
     }
