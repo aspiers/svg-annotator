@@ -30,6 +30,38 @@ export class SVGRenderer {
   } as const;
 
   /**
+   * Create a text or tspan element for single/multi-line text
+   */
+  private createTextLines(
+    lines: string[],
+    position: Point,
+    startY: number,
+    lineHeight: number,
+    style: any,
+    fontSize: string,
+    fillOpacity: number,
+    fontWeight: string,
+    strokeWidth: string,
+    textColor: string,
+    dataAttribute: string,
+    attributeValue: string
+  ): string {
+    if (lines.length === 1) {
+      // Single line - use simple text element
+      return `<text x="${position.x.toFixed(2)}" y="${startY.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${fontSize}" fill-opacity="${fillOpacity.toFixed(2)}" font-weight="${fontWeight}" fill="${textColor}" stroke="#000" stroke-width="${strokeWidth}" ${dataAttribute}="${attributeValue}">${lines[0]}</text>`;
+    } else {
+      // Multi-line - use tspan elements
+      const tspans = lines
+        .map((line, index) => {
+          const y = startY + index * lineHeight;
+          return `<tspan x="${position.x.toFixed(2)}" y="${y.toFixed(2)}">${line}</tspan>`;
+        })
+        .join('');
+      return `<text text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${fontSize}" fill-opacity="${fillOpacity.toFixed(2)}" font-weight="${fontWeight}" fill="${textColor}" stroke="#000" stroke-width="${strokeWidth}" ${dataAttribute}="${attributeValue}">${tspans}</text>`;
+    }
+  }
+
+  /**
    * Create a text element for hull labels
    */
   createTextElement(
@@ -44,8 +76,9 @@ export class SVGRenderer {
       : style.fill;
     const textOpacity = fillColor ? 0.9 : parseFloat(style.fillOpacity); // High opacity for readability
 
-    // Handle line breaks in name text
+    // Handle line breaks in both name and description text
     const nameLines = name.split(/\r?\n/);
+    const descriptionLines = description ? description.split(/\r?\n/) : [];
     const fontSize = parseInt(style.fontSize);
     const lineHeight = fontSize * 1.2; // 20% line spacing
     const labelFontSize = Math.round(fontSize * 0.7); // 70% of main font size
@@ -53,7 +86,7 @@ export class SVGRenderer {
 
     // Calculate total text block height
     const nameHeight = nameLines.length * lineHeight;
-    const descriptionHeight = description ? labelLineHeight : 0;
+    const descriptionHeight = descriptionLines.length * labelLineHeight;
     const totalHeight = nameHeight + (description ? 3 : 0) + descriptionHeight; // 3px gap between name and description
 
     // Calculate starting Y position to center the entire text block
@@ -62,30 +95,42 @@ export class SVGRenderer {
     const elements: string[] = [];
 
     // Name text
-    if (nameLines.length === 1) {
-      // Single line name - use simple text element
-      elements.push(
-        `<text x="${position.x.toFixed(2)}" y="${blockStartY.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity.toFixed(2)}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${name}</text>`
-      );
-    } else {
-      // Multi-line name - use tspan elements
-      const tspans = nameLines
-        .map((line, index) => {
-          const y = blockStartY + index * lineHeight;
-          return `<tspan x="${position.x.toFixed(2)}" y="${y.toFixed(2)}">${line}</tspan>`;
-        })
-        .join('');
-      elements.push(
-        `<text text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity.toFixed(2)}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${tspans}</text>`
-      );
-    }
+    elements.push(
+      this.createTextLines(
+        nameLines,
+        position,
+        blockStartY,
+        lineHeight,
+        style,
+        style.fontSize,
+        textOpacity,
+        style.fontWeight,
+        '0.5',
+        textColor,
+        'data-label-for',
+        name
+      )
+    );
 
     // Description text (if provided)
     if (description) {
-      const descriptionY = blockStartY + nameHeight + 3; // 3px gap
+      const descriptionStartY = blockStartY + nameHeight + 3; // 3px gap
       const descriptionOpacity = textOpacity * 0.8; // Slightly more transparent
       elements.push(
-        `<text x="${position.x.toFixed(2)}" y="${descriptionY.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${labelFontSize}" fill-opacity="${descriptionOpacity.toFixed(2)}" font-weight="normal" fill="${textColor}" stroke="#000" stroke-width="0.3" data-description-for="${name}">${description}</text>`
+        this.createTextLines(
+          descriptionLines,
+          position,
+          descriptionStartY,
+          labelLineHeight,
+          style,
+          labelFontSize.toString(),
+          descriptionOpacity,
+          'normal',
+          '0.3',
+          textColor,
+          'data-description-for',
+          name
+        )
       );
     }
 
