@@ -112,7 +112,7 @@ FOCUS AREAS:
   Use --areas to define reusable entity groups with custom colors.
   The YAML file should contain an array of objects with:
     name: Focus area identifier (used as argument)
-    label: Human-readable description
+    description: Human-readable description
     color: Color for the hull fill (hex like #FF0000, named like "pink", or RGB)
     areas: Array of entity names to include
     url: Optional URL to hyperlink the focus area (makes hull clickable)
@@ -124,14 +124,61 @@ The tool outputs SVG with smooth spline curve overlay.`
   private createTextElement(
     name: string,
     position: Point,
-    fillColor?: string
+    fillColor?: string,
+    description?: string
   ): string {
     const style = SVGAnnotatorCLI.TEXT_STYLE;
     const textColor = fillColor
       ? this.processColorForText(fillColor)
       : style.fill;
-    const textOpacity = fillColor ? '0.9' : style.fillOpacity; // High opacity for readability
-    return `<text x="${position.x.toFixed(2)}" y="${position.y.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${name}</text>`;
+    const textOpacity = fillColor ? 0.9 : parseFloat(style.fillOpacity); // High opacity for readability
+
+    // Handle line breaks in name text
+    const nameLines = name.split(/\r?\n/);
+    const fontSize = parseInt(style.fontSize);
+    const lineHeight = fontSize * 1.2; // 20% line spacing
+    const labelFontSize = Math.round(fontSize * 0.7); // 70% of main font size
+    const labelLineHeight = labelFontSize * 1.2;
+
+    // Calculate total text block height
+    const nameHeight = nameLines.length * lineHeight;
+    const descriptionHeight = description ? labelLineHeight : 0;
+    const totalHeight = nameHeight + (description ? 3 : 0) + descriptionHeight; // 3px gap between name and description
+
+    // Calculate starting Y position to center the entire text block
+    const blockStartY = position.y - totalHeight / 2 + lineHeight / 2;
+
+    const elements: string[] = [];
+
+    // Name text
+    if (nameLines.length === 1) {
+      // Single line name - use simple text element
+      elements.push(
+        `<text x="${position.x.toFixed(2)}" y="${blockStartY.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity.toFixed(2)}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${name}</text>`
+      );
+    } else {
+      // Multi-line name - use tspan elements
+      const tspans = nameLines
+        .map((line, index) => {
+          const y = blockStartY + index * lineHeight;
+          return `<tspan x="${position.x.toFixed(2)}" y="${y.toFixed(2)}">${line}</tspan>`;
+        })
+        .join('');
+      elements.push(
+        `<text text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity.toFixed(2)}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${tspans}</text>`
+      );
+    }
+
+    // Description text (if provided)
+    if (description) {
+      const descriptionY = blockStartY + nameHeight + 3; // 3px gap
+      const descriptionOpacity = textOpacity * 0.8; // Slightly more transparent
+      elements.push(
+        `<text x="${position.x.toFixed(2)}" y="${descriptionY.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${labelFontSize}" fill-opacity="${descriptionOpacity.toFixed(2)}" font-weight="normal" fill="${textColor}" stroke="#000" stroke-width="0.3" data-description-for="${name}">${description}</text>`
+      );
+    }
+
+    return elements.join('\n');
   }
 
   /**
@@ -168,6 +215,7 @@ The tool outputs SVG with smooth spline curve overlay.`
       perimeter: number;
       color?: string;
       url?: string;
+      description?: string;
     }>,
     splineConfig: SplineConfig,
     svgContent?: string,
@@ -244,7 +292,8 @@ The tool outputs SVG with smooth spline curve overlay.`
         const textElement = this.createTextElement(
           result.name,
           position,
-          fillColor
+          fillColor,
+          result.description
         );
         pathElements.push(textElement);
       }
@@ -363,7 +412,8 @@ The tool outputs SVG with smooth spline curve overlay.`
       const textElement = this.createTextElement(
         result.name,
         position,
-        fillColor
+        fillColor,
+        result.description
       );
       textLabels.push(`<!-- Text label for ${result.name} -->`);
       textLabels.push(textElement);
@@ -454,6 +504,7 @@ The tool outputs SVG with smooth spline curve overlay.`
           perimeter: number;
           color?: string;
           url?: string;
+          description?: string;
         }> = [];
 
         if (options.areas) {
@@ -468,6 +519,10 @@ The tool outputs SVG with smooth spline curve overlay.`
               focusAreaName
             );
             const url = FocusAreaParser.getUrlForFocusArea(
+              focusAreas,
+              focusAreaName
+            );
+            const description = FocusAreaParser.getDescriptionForFocusArea(
               focusAreas,
               focusAreaName
             );
@@ -516,6 +571,7 @@ The tool outputs SVG with smooth spline curve overlay.`
               perimeter: result.perimeter,
               color,
               url,
+              description,
             });
           }
         } else {

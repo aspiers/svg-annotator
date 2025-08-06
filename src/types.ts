@@ -24,7 +24,7 @@ export interface EntityGroup {
 
 export interface FocusArea {
   name: string;
-  label: string;
+  description?: string;
   color: string;
   areas: string[];
   url?: string;

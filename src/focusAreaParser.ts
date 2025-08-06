@@ -89,6 +89,17 @@ export class FocusAreaParser {
     return focusArea.url;
   }
 
+  static getDescriptionForFocusArea(
+    focusAreas: FocusArea[],
+    focusAreaName: string
+  ): string | undefined {
+    const focusArea = focusAreas.find((area) => area.name === focusAreaName);
+    if (!focusArea) {
+      throw new Error(`Focus area "${focusAreaName}" not found`);
+    }
+    return focusArea.description;
+  }
+
   static listAvailableFocusAreas(focusAreas: FocusArea[]): string[] {
     return focusAreas.map((area) => area.name);
   }

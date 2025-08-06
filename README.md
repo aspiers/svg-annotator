@@ -123,12 +123,13 @@ svg-annotator --areas focus-areas.yml
 
 ## Focus Areas Configuration
 
-Focus areas allow you to define reusable entity groupings with custom colors and labels. Create a YAML file:
+Focus areas allow you to define reusable entity groupings with custom colors and descriptions. Create a YAML file:
 
 ```yaml
 # focus-areas.yml
 - name: Carlos
   color: pink
+  description: Quality Assurance Team
   areas:
     - Measurer
     - Measurement
@@ -154,6 +155,7 @@ Focus areas allow you to define reusable entity groupings with custom colors and
 - `name`: Identifier used as CLI argument
 - `color`: Hull fill color (hex, named color, or RGB)
 - `areas`: Array of entity names to include
+- `description` (optional): Smaller subtitle text rendered below the name
 - `url` (optional): Makes the hull clickable
 
 ## Library API
