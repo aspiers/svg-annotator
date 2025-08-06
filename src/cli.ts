@@ -103,67 +103,188 @@ The tool outputs SVG with smooth spline curve overlay.`
       );
   }
 
+  private validateInputs(entityNames: string[], options: any): void {
+    // Validate that either entity names or areas file is provided
+    if (entityNames.length === 0 && !options.areas) {
+      throw new Error('Either entity names or --areas file must be provided');
+    }
+
+    // Validate curve type
+    const validCurveTypes: CurveType[] = [
+      'linear',
+      'catmull-rom',
+      'cardinal',
+      'basis',
+      'basis-closed',
+    ];
+    if (!validCurveTypes.includes(options.curveType)) {
+      throw new Error(
+        `Invalid curve type: ${options.curveType}. Must be one of: ${validCurveTypes.join(', ')}`
+      );
+    }
+  }
+
+  private validateSvgFile(svgPath: string): void {
+    if (!existsSync(svgPath)) {
+      throw new Error(`SVG file not found: ${svgPath}`);
+    }
+  }
+
+  private loadFocusAreas(
+    options: any,
+    entityNames: string[]
+  ): { focusAreas: FocusArea[]; focusAreaNames: string[] } {
+    let focusAreas: FocusArea[] = [];
+    let focusAreaNames: string[] = entityNames;
+
+    if (options.areas) {
+      const areasPath = resolve(options.areas);
+      if (!existsSync(areasPath)) {
+        throw new Error(`Focus areas file not found: ${areasPath}`);
+      }
+
+      focusAreas = FocusAreaParser.parseFocusAreasFile(areasPath);
+
+      // If no focus area names provided, use all focus areas
+      if (entityNames.length === 0) {
+        focusAreaNames = FocusAreaParser.listAvailableFocusAreas(focusAreas);
+        if (options.verbose) {
+          console.error(
+            `No focus areas specified, using all: ${focusAreaNames.join(', ')}`
+          );
+        }
+      }
+
+      if (options.verbose) {
+        console.error(`Focus areas file: ${areasPath}`);
+        console.error(
+          `Processing focus area(s): ${focusAreaNames.join(', ')}`
+        );
+      }
+    }
+
+    return { focusAreas, focusAreaNames };
+  }
+
+  private calculateHull(
+    points: Point[],
+    options: any,
+    name: string
+  ): { points: Point[]; area: number; perimeter: number } {
+    if (options.verbose) {
+      console.error(`Found ${points.length} points for "${name}"`);
+    }
+
+    // Calculate concave hull
+    const calculator = new HullCalculator();
+    const result = calculator.calculateConcaveHull(
+      points,
+      options.concavity,
+      options.lengthThreshold
+    );
+
+    if (options.verbose) {
+      console.error(
+        `Hull calculated for "${name}": ${result.points.length} points`
+      );
+      console.error(
+        `Area: ${result.area.toFixed(2)}, Perimeter: ${result.perimeter.toFixed(2)}`
+      );
+    }
+
+    // Add padding to hull points
+    const paddedPoints = HullPadding.addPadding(result.points, options.padding);
+
+    return {
+      points: paddedPoints,
+      area: result.area,
+      perimeter: result.perimeter,
+    };
+  }
+
+  private processFocusArea(
+    focusAreaName: string,
+    focusAreas: FocusArea[],
+    parser: SVGParser,
+    options: any
+  ): SVGRenderResult {
+    const entities = FocusAreaParser.getEntitiesForFocusArea(
+      focusAreas,
+      focusAreaName
+    );
+    const color = FocusAreaParser.getColorForFocusArea(
+      focusAreas,
+      focusAreaName
+    );
+    const url = FocusAreaParser.getUrlForFocusArea(focusAreas, focusAreaName);
+    const description = FocusAreaParser.getDescriptionForFocusArea(
+      focusAreas,
+      focusAreaName
+    );
+    const tooltip = FocusAreaParser.getTooltipForFocusArea(
+      focusAreas,
+      focusAreaName
+    );
+
+    if (options.verbose) {
+      console.error(
+        `Processing focus area "${focusAreaName}" with entities: ${entities.join(', ')}`
+      );
+    }
+
+    const points = parser.extractPointsFromEntityGroups(entities);
+    const hull = this.calculateHull(points, options, focusAreaName);
+
+    return {
+      name: focusAreaName,
+      points: hull.points,
+      area: hull.area,
+      perimeter: hull.perimeter,
+      color,
+      url,
+      description,
+      tooltip,
+    };
+  }
+
+  private processEntityGroup(
+    entityNames: string[],
+    parser: SVGParser,
+    options: any
+  ): SVGRenderResult {
+    const points = parser.extractPointsFromEntityGroups(entityNames);
+
+    if (options.verbose) {
+      console.error(`Searching for entities: ${entityNames.join(', ')}`);
+    }
+
+    const displayName =
+      entityNames.length === 1 ? entityNames[0] : entityNames.join('+');
+    const hull = this.calculateHull(points, options, displayName);
+
+    return {
+      name: displayName,
+      points: hull.points,
+      area: hull.area,
+      perimeter: hull.perimeter,
+    };
+  }
+
   async run(): Promise<void> {
     this.program.action(async (entityNames: string[], options) => {
       try {
-        // Validate that either entity names or areas file is provided
-        if (entityNames.length === 0 && !options.areas) {
-          throw new Error(
-            'Either entity names or --areas file must be provided'
-          );
-        }
+        // Validate inputs
+        this.validateInputs(entityNames, options);
 
-        // Validate curve type
-        const validCurveTypes: CurveType[] = [
-          'linear',
-          'catmull-rom',
-          'cardinal',
-          'basis',
-          'basis-closed',
-        ];
-        if (!validCurveTypes.includes(options.curveType)) {
-          throw new Error(
-            `Invalid curve type: ${options.curveType}. Must be one of: ${validCurveTypes.join(', ')}`
-          );
-        }
-
-        // Resolve SVG file path
+        // Resolve and validate SVG file path
         const svgPath = resolve(options.svg);
+        this.validateSvgFile(svgPath);
 
-        if (!existsSync(svgPath)) {
-          throw new Error(`SVG file not found: ${svgPath}`);
-        }
-
-        // Handle focus areas file if provided
-        let focusAreas: FocusArea[] = [];
-        let focusAreaNames: string[] = entityNames;
-
-        if (options.areas) {
-          const areasPath = resolve(options.areas);
-          if (!existsSync(areasPath)) {
-            throw new Error(`Focus areas file not found: ${areasPath}`);
-          }
-
-          focusAreas = FocusAreaParser.parseFocusAreasFile(areasPath);
-
-          // If no focus area names provided, use all focus areas
-          if (entityNames.length === 0) {
-            focusAreaNames =
-              FocusAreaParser.listAvailableFocusAreas(focusAreas);
-            if (options.verbose) {
-              console.error(
-                `No focus areas specified, using all: ${focusAreaNames.join(', ')}`
-              );
-            }
-          }
-
-          if (options.verbose) {
-            console.error(`Focus areas file: ${areasPath}`);
-            console.error(
-              `Processing focus area(s): ${focusAreaNames.join(', ')}`
-            );
-          }
-        }
+        // Load focus areas configuration
+        const { focusAreas, focusAreaNames } = this.loadFocusAreas(
+          options,
+          entityNames
+        );
 
         if (options.verbose) {
           console.error(`Loading SVG file: ${svgPath}`);
@@ -180,113 +301,13 @@ The tool outputs SVG with smooth spline curve overlay.`
         if (options.areas) {
           // Process each focus area separately
           for (const focusAreaName of focusAreaNames) {
-            const entities = FocusAreaParser.getEntitiesForFocusArea(
-              focusAreas,
-              focusAreaName
+            results.push(
+              this.processFocusArea(focusAreaName, focusAreas, parser, options)
             );
-            const color = FocusAreaParser.getColorForFocusArea(
-              focusAreas,
-              focusAreaName
-            );
-            const url = FocusAreaParser.getUrlForFocusArea(
-              focusAreas,
-              focusAreaName
-            );
-            const description = FocusAreaParser.getDescriptionForFocusArea(
-              focusAreas,
-              focusAreaName
-            );
-            const tooltip = FocusAreaParser.getTooltipForFocusArea(
-              focusAreas,
-              focusAreaName
-            );
-
-            if (options.verbose) {
-              console.error(
-                `Processing focus area "${focusAreaName}" with entities: ${entities.join(', ')}`
-              );
-            }
-
-            const points = parser.extractPointsFromEntityGroups(entities);
-
-            if (options.verbose) {
-              console.error(
-                `Found ${points.length} points for focus area "${focusAreaName}"`
-              );
-            }
-
-            // Calculate concave hull
-            const calculator = new HullCalculator();
-            const result = calculator.calculateConcaveHull(
-              points,
-              options.concavity,
-              options.lengthThreshold
-            );
-
-            if (options.verbose) {
-              console.error(
-                `Hull calculated for "${focusAreaName}": ${result.points.length} points`
-              );
-              console.error(
-                `Area: ${result.area.toFixed(2)}, Perimeter: ${result.perimeter.toFixed(2)}`
-              );
-            }
-
-            // Add padding to hull points
-            const paddedPoints = HullPadding.addPadding(
-              result.points,
-              options.padding
-            );
-
-            results.push({
-              name: focusAreaName,
-              points: paddedPoints,
-              area: result.area,
-              perimeter: result.perimeter,
-              color,
-              url,
-              description,
-              tooltip,
-            });
           }
         } else {
           // Process single entity group (original behavior)
-          const points = parser.extractPointsFromEntityGroups(entityNames);
-
-          if (options.verbose) {
-            console.error(`Searching for entities: ${entityNames.join(', ')}`);
-            console.error(`Found ${points.length} points in entity group`);
-          }
-
-          // Calculate concave hull
-          const calculator = new HullCalculator();
-          const result = calculator.calculateConcaveHull(
-            points,
-            options.concavity,
-            options.lengthThreshold
-          );
-
-          if (options.verbose) {
-            console.error(`Hull calculated: ${result.points.length} points`);
-            console.error(
-              `Area: ${result.area.toFixed(2)}, Perimeter: ${result.perimeter.toFixed(2)}`
-            );
-          }
-
-          // Add padding to hull points
-          const paddedPoints = HullPadding.addPadding(
-            result.points,
-            options.padding
-          );
-
-          const displayName =
-            entityNames.length === 1 ? entityNames[0] : entityNames.join('+');
-          results.push({
-            name: displayName,
-            points: paddedPoints,
-            area: result.area,
-            perimeter: result.perimeter,
-          });
+          results.push(this.processEntityGroup(entityNames, parser, options));
         }
 
         if (options.verbose && options.padding > 0) {
