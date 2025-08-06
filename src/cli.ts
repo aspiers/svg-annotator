@@ -131,7 +131,7 @@ The tool outputs SVG with smooth spline curve overlay.`
       ? this.processColorForText(fillColor)
       : style.fill;
     const textOpacity = fillColor ? '0.9' : style.fillOpacity; // High opacity for readability
-    return `<text x="${position.x.toFixed(2)}" y="${position.y.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity}" font-weight="${style.fontWeight}" fill="${textColor}" data-label-for="${name}">${name}</text>`;
+    return `<text x="${position.x.toFixed(2)}" y="${position.y.toFixed(2)}" text-anchor="${style.textAnchor}" dominant-baseline="${style.dominantBaseline}" font-family="${style.fontFamily}" font-size="${style.fontSize}" fill-opacity="${textOpacity}" font-weight="${style.fontWeight}" fill="${textColor}" stroke="#000" stroke-width="0.5" data-label-for="${name}">${name}</text>`;
   }
 
   /**
