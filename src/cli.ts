@@ -116,6 +116,7 @@ FOCUS AREAS:
     color: Color for the hull fill (hex like #FF0000, named like "pink", or RGB)
     areas: Array of entity names to include
     url: Optional URL to hyperlink the focus area (makes hull clickable)
+    tooltip: Optional tooltip text shown on hover
 
 The tool outputs SVG with smooth spline curve overlay.`
       );
@@ -216,6 +217,7 @@ The tool outputs SVG with smooth spline curve overlay.`
       color?: string;
       url?: string;
       description?: string;
+      tooltip?: string;
     }>,
     splineConfig: SplineConfig,
     svgContent?: string,
@@ -253,7 +255,10 @@ The tool outputs SVG with smooth spline curve overlay.`
         });
 
         // Create single path with watercolor filter, transparency, and blend mode
-        const pathElement = `<path d="${splineResult.pathData}" fill="${fillColor}" fill-opacity="0.9" stroke="none" filter="url(#${filterId})" style="mix-blend-mode: multiply;" data-hull-entity="${result.name}" data-curve-type="${splineConfig.type}"/>`;
+        const tooltipElement = result.tooltip
+          ? `<title>${result.tooltip}</title>`
+          : '';
+        const pathElement = `<path d="${splineResult.pathData}" fill="${fillColor}" fill-opacity="0.9" stroke="none" filter="url(#${filterId})" style="mix-blend-mode: multiply;" data-hull-entity="${result.name}" data-curve-type="${splineConfig.type}">${tooltipElement}</path>`;
 
         if (result.url) {
           pathElements.push(
@@ -358,7 +363,10 @@ The tool outputs SVG with smooth spline curve overlay.`
       );
 
       // Create single path with watercolor filter, transparency, and blend mode
-      const pathElement = `<path d="${splineResult.pathData}" fill="${fillColor}" fill-opacity="0.9" stroke="none" filter="url(#${filterId})" style="mix-blend-mode: multiply;" data-hull-entity="${result.name}" data-curve-type="${splineConfig.type}"/>`;
+      const tooltipElement = result.tooltip
+        ? `<title>${result.tooltip}</title>`
+        : '';
+      const pathElement = `<path d="${splineResult.pathData}" fill="${fillColor}" fill-opacity="0.9" stroke="none" filter="url(#${filterId})" style="mix-blend-mode: multiply;" data-hull-entity="${result.name}" data-curve-type="${splineConfig.type}">${tooltipElement}</path>`;
 
       if (result.url) {
         splinePaths.push(
@@ -505,6 +513,7 @@ The tool outputs SVG with smooth spline curve overlay.`
           color?: string;
           url?: string;
           description?: string;
+          tooltip?: string;
         }> = [];
 
         if (options.areas) {
@@ -523,6 +532,10 @@ The tool outputs SVG with smooth spline curve overlay.`
               focusAreaName
             );
             const description = FocusAreaParser.getDescriptionForFocusArea(
+              focusAreas,
+              focusAreaName
+            );
+            const tooltip = FocusAreaParser.getTooltipForFocusArea(
               focusAreas,
               focusAreaName
             );
@@ -572,6 +585,7 @@ The tool outputs SVG with smooth spline curve overlay.`
               color,
               url,
               description,
+              tooltip,
             });
           }
         } else {

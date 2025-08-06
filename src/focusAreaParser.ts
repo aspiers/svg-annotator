@@ -100,6 +100,17 @@ export class FocusAreaParser {
     return focusArea.description;
   }
 
+  static getTooltipForFocusArea(
+    focusAreas: FocusArea[],
+    focusAreaName: string
+  ): string | undefined {
+    const focusArea = focusAreas.find((area) => area.name === focusAreaName);
+    if (!focusArea) {
+      throw new Error(`Focus area "${focusAreaName}" not found`);
+    }
+    return focusArea.tooltip;
+  }
+
   static listAvailableFocusAreas(focusAreas: FocusArea[]): string[] {
     return focusAreas.map((area) => area.name);
   }

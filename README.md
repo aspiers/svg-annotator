@@ -138,6 +138,7 @@ Focus areas allow you to define reusable entity groupings with custom colors and
 - name: Luca
   color: lemonchiffon
   url: https://example.com
+  tooltip: External systems and reward allocation mechanisms
   areas:
     - ExternalWorld
     - RewardAllocation
@@ -157,6 +158,7 @@ Focus areas allow you to define reusable entity groupings with custom colors and
 - `areas`: Array of entity names to include
 - `description` (optional): Smaller subtitle text rendered below the name
 - `url` (optional): Makes the hull clickable
+- `tooltip` (optional): Tooltip text shown on hover over the hull area
 
 ## Library API
 
