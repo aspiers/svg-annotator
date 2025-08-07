@@ -3,9 +3,9 @@
 import { existsSync } from 'fs';
 import { resolve } from 'path';
 import { Command } from 'commander';
-import { FocusAreaParser } from './focusAreaParser.js';
+import { HighlightAreaParser } from './highlightAreaParser.js';
 import { AnnotationService, AnnotationOptions } from './annotationService.js';
-import { CurveType, FocusArea } from './types.js';
+import { CurveType, HighlightArea } from './types.js';
 
 class SVGAnnotatorCLI {
   private program: Command;
@@ -64,7 +64,10 @@ class SVGAnnotatorCLI {
         parseFloat,
         15
       )
-      .option('--areas <file>', 'YAML file containing focus area definitions')
+      .option(
+        '--areas <file>',
+        'YAML file containing highlight area definitions'
+      )
       .option('-v, --verbose', 'Verbose output', false)
       .addHelpText(
         'after',
@@ -76,8 +79,8 @@ EXAMPLES:
   svg-annotator Treasury --curve-type catmull-rom > treasury-spline.svg
   svg-annotator Treasury FundingSource --padding 20 > multi-entity.svg
   svg-annotator "Impact*"  # Multiple entities with pattern matching
-  svg-annotator --areas focus-areas.yml Luca  # Use focus area definition
-  svg-annotator --areas focus-areas.yml      # Use all focus areas
+  svg-annotator --areas highlight-areas.yml Luca  # Use highlight area definition
+  svg-annotator --areas highlight-areas.yml      # Use all highlight areas
 
 CURVE TYPES:
   linear       - Linear segments (no smoothing)
@@ -86,14 +89,14 @@ CURVE TYPES:
   basis        - B-spline basis (very smooth, may not pass through points)
   basis-closed - Closed B-spline basis (smooth closed curve)
 
-FOCUS AREAS:
+HIGHLIGHT AREAS:
   Use --areas to define reusable entity groups with custom colors.
   The YAML file should contain an array of objects with:
-    name: Focus area identifier (used as argument)
+    name: Highlight area identifier (used as argument)
     description: Human-readable description
     color: Color for the hull fill (hex like #FF0000, named like "pink", or RGB)
     areas: Array of entity names to include
-    url: Optional URL to hyperlink the focus area (makes hull clickable)
+    url: Optional URL to hyperlink the highlight area (makes hull clickable)
     tooltip: Optional tooltip text shown on hover
 
 The tool outputs SVG with smooth spline curve overlay.`
@@ -127,42 +130,42 @@ The tool outputs SVG with smooth spline curve overlay.`
     }
   }
 
-  private loadFocusAreas(
+  private loadHighlightAreas(
     options: any,
     entityNames: string[]
-  ): { focusAreas: FocusArea[]; focusAreaNames: string[] } {
-    let focusAreas: FocusArea[] = [];
-    let focusAreaNames: string[] = entityNames;
+  ): { highlightAreas: HighlightArea[]; highlightAreaNames: string[] } {
+    let highlightAreas: HighlightArea[] = [];
+    let highlightAreaNames: string[] = entityNames;
 
     if (options.areas) {
       const areasPath = resolve(options.areas);
       if (!existsSync(areasPath)) {
-        throw new Error(`Focus areas file not found: ${areasPath}`);
+        throw new Error(`Highlight areas file not found: ${areasPath}`);
       }
 
-      focusAreas = FocusAreaParser.parseFocusAreasFile(areasPath);
+      highlightAreas = HighlightAreaParser.parseHighlightAreasFile(areasPath);
 
-      // If no focus area names provided, use all focus areas
+      // If no highlight area names provided, use all highlight areas
       if (entityNames.length === 0) {
-        focusAreaNames = FocusAreaParser.listAvailableFocusAreas(focusAreas);
+        highlightAreaNames =
+          HighlightAreaParser.listAvailableHighlightAreas(highlightAreas);
         if (options.verbose) {
           console.error(
-            `No focus areas specified, using all: ${focusAreaNames.join(', ')}`
+            `No highlight areas specified, using all: ${highlightAreaNames.join(', ')}`
           );
         }
       }
 
       if (options.verbose) {
-        console.error(`Focus areas file: ${areasPath}`);
+        console.error(`Highlight areas file: ${areasPath}`);
         console.error(
-          `Processing focus area(s): ${focusAreaNames.join(', ')}`
+          `Processing highlight area(s): ${highlightAreaNames.join(', ')}`
         );
       }
     }
 
-    return { focusAreas, focusAreaNames };
+    return { highlightAreas, highlightAreaNames };
   }
-
 
   async run(): Promise<void> {
     this.program.action(async (entityNames: string[], options) => {
@@ -174,8 +177,8 @@ The tool outputs SVG with smooth spline curve overlay.`
         const svgPath = resolve(options.svg);
         this.validateSvgFile(svgPath);
 
-        // Load focus areas configuration
-        const { focusAreas, focusAreaNames } = this.loadFocusAreas(
+        // Load highlight areas configuration
+        const { highlightAreas, highlightAreaNames } = this.loadHighlightAreas(
           options,
           entityNames
         );
@@ -201,8 +204,8 @@ The tool outputs SVG with smooth spline curve overlay.`
         const output = this.annotationService.annotate(
           svgPath,
           entityNames,
-          focusAreas,
-          focusAreaNames,
+          highlightAreas,
+          highlightAreaNames,
           annotationOptions,
           !!options.areas
         );

@@ -2,14 +2,9 @@ import { readFileSync } from 'fs';
 import { SVGParser } from './svgParser.js';
 import { HullCalculator } from './hullCalculator.js';
 import { HullPadding } from './hullPadding.js';
-import { FocusAreaParser } from './focusAreaParser.js';
+import { HighlightAreaParser } from './highlightAreaParser.js';
 import { SVGRenderer, SVGRenderResult } from './svgRenderer.js';
-import {
-  Point,
-  CurveType,
-  SplineConfig,
-  FocusArea,
-} from './types.js';
+import { Point, CurveType, SplineConfig, HighlightArea } from './types.js';
 
 export interface AnnotationOptions {
   concavity: number;
@@ -64,41 +59,48 @@ export class AnnotationService {
     };
   }
 
-  private processFocusArea(
-    focusAreaName: string,
-    focusAreas: FocusArea[],
+  private processHighlightArea(
+    highlightAreaName: string,
+    highlightAreas: HighlightArea[],
     parser: SVGParser,
     options: AnnotationOptions
   ): SVGRenderResult {
-    const entities = FocusAreaParser.getEntitiesForFocusArea(
-      focusAreas,
-      focusAreaName
+    const entities = HighlightAreaParser.getEntitiesForHighlightArea(
+      highlightAreas,
+      highlightAreaName
     );
-    const color = FocusAreaParser.getColorForFocusArea(
-      focusAreas,
-      focusAreaName
+    const links = HighlightAreaParser.getLinksForHighlightArea(
+      highlightAreas,
+      highlightAreaName
     );
-    const url = FocusAreaParser.getUrlForFocusArea(focusAreas, focusAreaName);
-    const description = FocusAreaParser.getDescriptionForFocusArea(
-      focusAreas,
-      focusAreaName
+    const color = HighlightAreaParser.getColorForHighlightArea(
+      highlightAreas,
+      highlightAreaName
     );
-    const tooltip = FocusAreaParser.getTooltipForFocusArea(
-      focusAreas,
-      focusAreaName
+    const url = HighlightAreaParser.getUrlForHighlightArea(
+      highlightAreas,
+      highlightAreaName
+    );
+    const description = HighlightAreaParser.getDescriptionForHighlightArea(
+      highlightAreas,
+      highlightAreaName
+    );
+    const tooltip = HighlightAreaParser.getTooltipForHighlightArea(
+      highlightAreas,
+      highlightAreaName
     );
 
     if (options.verbose) {
       console.error(
-        `Processing focus area "${focusAreaName}" with entities: ${entities.join(', ')}`
+        `Processing highlight area "${highlightAreaName}" with ${combinedInfo}`
       );
     }
 
     const points = parser.extractPointsFromEntityGroups(entities);
-    const hull = this.calculateHull(points, options, focusAreaName);
+    const hull = this.calculateHull(points, options, highlightAreaName);
 
     return {
-      name: focusAreaName,
+      name: highlightAreaName,
       points: hull.points,
       area: hull.area,
       perimeter: hull.perimeter,
@@ -138,22 +140,27 @@ export class AnnotationService {
   annotate(
     svgPath: string,
     entityNames: string[],
-    focusAreas: FocusArea[],
-    focusAreaNames: string[],
+    highlightAreas: HighlightArea[],
+    highlightAreaNames: string[],
     options: AnnotationOptions,
     useAreasMode: boolean
   ): string {
     // Parse SVG once
     const parser = new SVGParser(svgPath);
 
-    // Process each focus area/entity group
+    // Process each highlight area/entity group
     const results: SVGRenderResult[] = [];
 
     if (useAreasMode) {
-      // Process each focus area separately
-      for (const focusAreaName of focusAreaNames) {
+      // Process each highlight area separately
+      for (const highlightAreaName of highlightAreaNames) {
         results.push(
-          this.processFocusArea(focusAreaName, focusAreas, parser, options)
+          this.processHighlightArea(
+            highlightAreaName,
+            highlightAreas,
+            parser,
+            options
+          )
         );
       }
     } else {

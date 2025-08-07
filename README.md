@@ -2,7 +2,7 @@
 
 A mostly vibe-coded TypeScript library and CLI tool for generating
 visual hull overlays around entity groups in SVG diagrams. Perfect for
-creating focus area annotations, highlighting related elements, and
+creating highlight area annotations, highlighting related elements, and
 adding visual emphasis to complex diagrams.
 
 ## Features
@@ -11,7 +11,7 @@ adding visual emphasis to complex diagrams.
 - **Multiple Curve Types**: Linear, Catmull-Rom, Cardinal, B-spline, and closed curves
 - **Watercolor Effects**: Artistic SVG filters for beautiful visual overlays
 - **Text Collision Avoidance**: Intelligent label positioning to avoid overlapping existing elements
-- **Focus Area Support**: YAML-based configuration for reusable entity groupings
+- **Highlight Area Support**: YAML-based configuration for reusable entity groupings
 - **Pattern Matching**: Wildcard support for selecting multiple entities (e.g., `Impact*`)
 - **TypeScript Support**: Full type definitions for library usage
 - **Both CLI and Library**: Use as a command-line tool or integrate programmatically
@@ -49,8 +49,8 @@ svg-annotator MyEntity --svg diagram.svg
 # Multiple entities with custom styling
 svg-annotator Entity1 Entity2 --curve-type cardinal --padding 20
 
-# Use focus areas configuration
-svg-annotator --areas focus-areas.yml
+# Use highlight areas configuration
+svg-annotator --areas highlight-areas.yml
 
 # Pattern matching
 svg-annotator "Impact*" --verbose
@@ -94,7 +94,7 @@ svg-annotator [entity-names...] [options]
 | `--curve-tension <number>`        | Tension for cardinal curves (0.0-1.0)                          | `0.2`         |
 | `--curve-alpha <number>`          | Alpha for Catmull-Rom curves (0.0-1.0)                         | `0.5`         |
 | `-p, --padding <number>`          | Padding around hull in SVG units                               | `15`          |
-| `--areas <file>`                  | YAML file containing focus area definitions                    | -             |
+| `--areas <file>`                  | YAML file containing highlight area definitions                | -             |
 | `-v, --verbose`                   | Verbose output                                                 | `false`       |
 | `-h, --help`                      | Display help information                                       | -             |
 | `-V, --version`                   | Display version number                                         | -             |
@@ -114,19 +114,19 @@ svg-annotator ObjectivesDesigner > annotated-diagram.svg
 # Pattern matching for multiple entities
 svg-annotator "Impact*" --concavity 15
 
-# Use focus areas configuration
-svg-annotator --areas focus-areas.yml Carlos
+# Use highlight areas configuration
+svg-annotator --areas highlight-areas.yml Carlos
 
-# All focus areas
-svg-annotator --areas focus-areas.yml
+# All highlight areas
+svg-annotator --areas highlight-areas.yml
 ```
 
-## Focus Areas Configuration
+## Highlight Areas Configuration
 
-Focus areas allow you to define reusable entity groupings with custom colors and descriptions. Create a YAML file:
+Highlight areas allow you to define reusable entity groupings with custom colors and descriptions. Create a YAML file:
 
 ```yaml
-# focus-areas.yml
+# highlight-areas.yml
 - name: Carlos
   color: pink
   description: Quality Assurance Team
@@ -151,7 +151,7 @@ Focus areas allow you to define reusable entity groupings with custom colors and
     - ImpactMeasurement
 ```
 
-### Focus Area Properties
+### Highlight Area Properties
 
 - `name`: Identifier used as CLI argument
 - `color`: Hull fill color (hex, named color, or RGB)
@@ -190,13 +190,13 @@ Generate a hull overlay for specified entities.
 
 **Returns:** Object with hull data, SVG path, and filter information.
 
-##### `generateFocusAreaOverlays(focusAreasFilePath)`
+##### `generateHighlightAreaOverlays(highlightAreasFilePath)`
 
-Generate overlays for all focus areas from a YAML file.
+Generate overlays for all highlight areas from a YAML file.
 
 **Parameters:**
 
-- `focusAreasFilePath: string` - Path to YAML configuration file
+- `highlightAreasFilePath: string` - Path to YAML configuration file
 
 **Returns:** Array of overlay results with label positioning.
 
@@ -299,5 +299,5 @@ GPL-3.0 License - see [LICENSE](LICENSE) file for details.
 - Multiple curve types
 - Watercolor effects
 - Text collision avoidance
-- Focus areas support
+- Highlight areas support
 - Full TypeScript support

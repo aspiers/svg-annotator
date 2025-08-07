@@ -12,7 +12,7 @@ import { HullCalculator } from './hullCalculator.js';
 import { SplineGenerator } from './splineGenerator.js';
 import { WatercolorFilters } from './watercolorFilters.js';
 import { TextCollisionDetector } from './textCollisionDetector.js';
-import { FocusAreaParser } from './focusAreaParser.js';
+import { HighlightAreaParser } from './highlightAreaParser.js';
 import { GeometryUtils } from './geometryUtils.js';
 import { ColorUtils } from './colorUtils.js';
 import { HullPadding } from './hullPadding.js';
@@ -23,7 +23,7 @@ import type {
   BoundingBox,
   SVGElement,
   EntityGroup,
-  FocusArea,
+  HighlightArea,
   ConcaveHullResult,
   CurveType,
   SplineConfig,
@@ -37,7 +37,7 @@ export { HullCalculator };
 export { SplineGenerator };
 export { WatercolorFilters };
 export { TextCollisionDetector };
-export { FocusAreaParser };
+export { HighlightAreaParser };
 export { GeometryUtils };
 export { ColorUtils };
 export { HullPadding };
@@ -48,7 +48,7 @@ export type {
   BoundingBox,
   SVGElement,
   EntityGroup,
-  FocusArea,
+  HighlightArea,
   ConcaveHullResult,
   CurveType,
   SplineConfig,
@@ -140,15 +140,17 @@ export class SVGAnnotator {
   }
 
   /**
-   * Generate multiple focus area overlays
+   * Generate multiple highlight area overlays
    */
-  generateFocusAreaOverlays(focusAreasFilePath: string) {
-    const focusAreas = FocusAreaParser.parseFocusAreasFile(focusAreasFilePath);
+  generateHighlightAreaOverlays(highlightAreasFilePath: string) {
+    const highlightAreas = HighlightAreaParser.parseHighlightAreasFile(
+      highlightAreasFilePath
+    );
     const results = [];
 
-    for (const focusArea of focusAreas) {
-      const overlay = this.generateHullOverlay(focusArea.areas, {
-        color: focusArea.color,
+    for (const highlightArea of highlightAreas) {
+      const overlay = this.generateHullOverlay(highlightArea.areas || [], {
+        color: highlightArea.color,
         enableWatercolor: true,
       });
 
@@ -156,7 +158,7 @@ export class SVGAnnotator {
       const centroid = GeometryUtils.calculateCentroid(overlay.hull.points);
       const labelPosition =
         this.collisionDetector.findNearestNonCollidingPosition(
-          focusArea.name,
+          highlightArea.name,
           16, // fontSize
           'Arial', // fontFamily
           centroid
@@ -164,7 +166,7 @@ export class SVGAnnotator {
 
       results.push({
         ...overlay,
-        focusArea,
+        highlightArea,
         labelPosition,
       });
     }

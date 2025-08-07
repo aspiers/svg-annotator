@@ -1,12 +1,12 @@
 # Text Collision Avoidance Implementation Plan
 
-**Goal:** Position focus area name labels to avoid overlapping with existing SVG elements
+**Goal:** Position highlight area name labels to avoid overlapping with existing SVG elements
 
 ## Phase 1: Text Collision Detection System
 
 - [x] **Create TextCollisionDetector class** in `src/textCollisionDetector.ts`
   - [x] Extract all existing SVG text elements and their bounding boxes
-  - [x] Calculate bounding box for each focus area label (using font-size, font-family, text content)
+  - [x] Calculate bounding box for each highlight area label (using font-size, font-family, text content)
   - [x] Implement collision detection between rectangles
 
 - [x] **Enhance GeometryUtils**
@@ -20,7 +20,7 @@
   - [x] Start with centroid as preferred position
   - [x] Generate candidate positions in concentric circles around centroid
   - [x] Try positions at 8 cardinal/ordinal directions at increasing distances
-  - [x] Check each candidate against all existing SVG elements + other focus area labels
+  - [x] Check each candidate against all existing SVG elements + other highlight area labels
 
 - [x] **Update SVG Generation Logic**
   - [x] Modify `generateSVGOutput()` in `src/index.ts`
@@ -39,10 +39,10 @@
 ## Technical Approach
 
 - **Candidate Generation**: Spiral outward from centroid in 8 directions
-- **Distance Increments**: 20px steps outward (font-size * 1.4)
+- **Distance Increments**: 20px steps outward (font-size \* 1.4)
 - **Max Search Distance**: 200px from centroid to avoid labels getting too far away
 - **Collision Buffer**: 5px padding around text bounding boxes
-- **Priority Order**: Process focus areas by size (largest first) to give priority to bigger hulls
+- **Priority Order**: Process highlight areas by size (largest first) to give priority to bigger hulls
 
 ## Files to Modify
 
@@ -56,7 +56,7 @@
 
 Run `make areas` or other `make` targets as appropriate.
 
-- [x] Test with current 3 focus areas (Carlos, Carl, Luca)
+- [x] Test with current 3 highlight areas (Carlos, Carl, Luca)
 - [x] Debug and fix collision detection filtering (was including invalid path bounding boxes)
 - [x] Verify labels are now positioned away from existing elements
 - [x] Ensure collision detection only considers relevant elements (text, simple shapes)
@@ -69,12 +69,14 @@ Run `make areas` or other `make` targets as appropriate.
 **Risk Level:** Low (graceful fallback to current centroid positioning)
 
 **Final State:** ✅ **IMPLEMENTATION COMPLETE**
-Focus area labels are positioned at geometric centroids with 36px font size and 0.3 opacity. Three labels currently exist: "Carlos", "Carl", "Luca".
+Highlight area labels are positioned at geometric centroids with 36px font size and 0.3 opacity. Three labels currently exist: "Carlos", "Carl", "Luca".
+
 - Text collision avoidance system successfully implemented with scoring-based positioning
 - Labels positioned to minimize collisions while staying close to hull centroids
 - All three labels (Carlos, Carl, Luca) positioned with intelligent collision avoidance
 
 **Key achievements:**
+
 - ✅ Spiral search collision avoidance with distance-based scoring
 - ✅ Smart positioning that minimizes rather than eliminates all collisions
 - ✅ Hull color integration with d3-color processing for text readability

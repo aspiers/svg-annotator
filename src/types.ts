@@ -22,7 +22,7 @@ export interface EntityGroup {
   boundingBox: BoundingBox;
 }
 
-export interface FocusArea {
+export interface HighlightArea {
   name: string;
   description?: string;
   color: string;

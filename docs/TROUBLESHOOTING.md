@@ -270,7 +270,7 @@ svg-annotator --help  # Lists all curve types
 
 ### Text labels overlap or are misplaced
 
-**Problem:** Focus area labels appear in wrong positions or overlap with diagram elements.
+**Problem:** Highlight area labels appear in wrong positions or overlap with diagram elements.
 
 **Solutions:**
 
@@ -292,11 +292,11 @@ svg-annotator --help  # Lists all curve types
 
 3. **Simplify the SVG** by reducing text elements in the original diagram
 
-## Focus Areas Issues
+## Highlight Areas Issues
 
 ### YAML parsing errors
 
-**Problem:** `Failed to parse focus areas file` error.
+**Problem:** `Failed to parse highlight areas file` error.
 
 **Common YAML mistakes:**
 
@@ -329,7 +329,7 @@ color: red      # Should be indented
 
    ```bash
    # Use online YAML validators or
-   npx js-yaml focus-areas.yml
+   npx js-yaml highlight-areas.yml
    ```
 
 2. **Check indentation** (use spaces, not tabs)
@@ -342,7 +342,7 @@ color: red      # Should be indented
 
 ### Invalid color values
 
-**Problem:** `Invalid color` error in focus areas.
+**Problem:** `Invalid color` error in highlight areas.
 
 **Valid color formats:**
 
@@ -365,9 +365,9 @@ color: red-ish         # Invalid name
 color: hsl(0,100%,50%) # HSL not supported
 ```
 
-### Focus area entities not found
+### Highlight area entities not found
 
-**Problem:** Entities listed in focus areas don't exist in the SVG.
+**Problem:** Entities listed in highlight areas don't exist in the SVG.
 
 **Solutions:**
 
@@ -378,7 +378,7 @@ color: hsl(0,100%,50%) # HSL not supported
    grep -o 'data-entity="[^"]*"' diagram.svg
 
    # Check YAML content
-   cat focus-areas.yml
+   cat highlight-areas.yml
    ```
 
 2. **Use pattern matching**:

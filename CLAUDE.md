@@ -44,7 +44,7 @@ SVG Input → Entity Extraction → Point Collection → Hull Calculation → Pa
 - **`splineGenerator.ts`** - Smooth curve generation with D3-shape (multiple curve types)
 - **`watercolorFilters.ts`** - SVG filter generation for artistic watercolor effects
 - **`textCollisionDetector.ts`** - Intelligent label positioning to avoid overlaps
-- **`focusAreaParser.ts`** - YAML configuration parsing for entity groupings
+- **`highlightAreaParser.ts`** - YAML configuration parsing for entity groupings
 
 ### Data Flow Architecture
 
@@ -73,7 +73,7 @@ Uses Node.js built-in test runner with tests in `test/`:
 
 ### SVG Requirements
 
-Entities must be marked with `data-entity` attributes:
+**Entities** must be marked with `data-entity` attributes:
 
 ```xml
 <g data-entity="EntityName">
@@ -81,7 +81,7 @@ Entities must be marked with `data-entity` attributes:
 </g>
 ```
 
-### Focus Areas Configuration
+### Highlight Areas Configuration
 
 YAML-based entity grouping system supporting:
 

@@ -112,9 +112,9 @@ svg-annotator Treasury --concavity 50 --padding 30 --svg sample-diagram.svg > lo
 - Medium values (20-50): Balanced, natural-looking hulls
 - Higher values (100+): Looser, more convex hulls
 
-### Step 5: Using Focus Areas
+### Step 5: Using Highlight Areas
 
-Create a focus areas configuration file `tutorial-areas.yml`:
+Create a highlight areas configuration file `tutorial-areas.yml`:
 
 ```yaml
 - name: Financial
@@ -136,14 +136,14 @@ Create a focus areas configuration file `tutorial-areas.yml`:
     - ExternalWorld
 ```
 
-Generate hulls for focus areas:
+Generate hulls for highlight areas:
 
 ```bash
-# Single focus area
-svg-annotator --areas tutorial-areas.yml Financial --svg sample-diagram.svg > financial-focus.svg
+# Single highlight area
+svg-annotator --areas tutorial-areas.yml Financial --svg sample-diagram.svg > financial-highlight.svg
 
-# All focus areas
-svg-annotator --areas tutorial-areas.yml --svg sample-diagram.svg > all-focus-areas.svg
+# All highlight areas
+svg-annotator --areas tutorial-areas.yml --svg sample-diagram.svg > all-highlight-areas.svg
 ```
 
 ### Step 6: Pattern Matching
@@ -238,8 +238,10 @@ import { writeFileSync } from 'fs';
 
 const annotator = new SVGAnnotator('./sample-diagram.svg');
 
-// Generate multiple focus area overlays
-const overlays = annotator.generateFocusAreaOverlays('./tutorial-areas.yml');
+// Generate multiple highlight area overlays
+const overlays = annotator.generateHighlightAreaOverlays(
+  './tutorial-areas.yml'
+);
 
 // Build complete SVG
 let svgOutput = `<?xml version="1.0" encoding="UTF-8"?>
@@ -257,12 +259,12 @@ if (filterDefs) {
 
 // Add hull paths
 for (const overlay of overlays) {
-  const { pathData, color, filterId, focusArea } = overlay;
+  const { pathData, color, filterId, highlightArea } = overlay;
 
-  svgOutput += `\n<!-- Hull for ${focusArea.name} -->`;
+  svgOutput += `\n<!-- Hull for ${highlightArea.name} -->`;
 
-  if (focusArea.url) {
-    svgOutput += `\n<a href="${focusArea.url}">`;
+  if (highlightArea.url) {
+    svgOutput += `\n<a href="${highlightArea.url}">`;
   }
 
   svgOutput += `\n<path d="${pathData}" fill="${color}" fill-opacity="0.9" stroke="none"`;
@@ -273,13 +275,13 @@ for (const overlay of overlays) {
 
   svgOutput += ` style="mix-blend-mode: multiply;"/>`;
 
-  if (focusArea.url) {
+  if (highlightArea.url) {
     svgOutput += '\n</a>';
   }
 
   // Add label
   const { x, y } = overlay.labelPosition;
-  svgOutput += `\n<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial" font-size="16" fill="#333" font-weight="bold">${focusArea.name}</text>`;
+  svgOutput += `\n<text x="${x}" y="${y}" text-anchor="middle" font-family="Arial" font-size="16" fill="#333" font-weight="bold">${highlightArea.name}</text>`;
 }
 
 svgOutput += '\n</svg>';
@@ -311,7 +313,7 @@ console.log('Annotated diagram saved to annotated-diagram.svg');
 ```typescript
 // Good color choices for overlays
 const colors = {
-  primary: '#2196F3', // Blue - for main focus areas
+  primary: '#2196F3', // Blue - for main highlight areas
   secondary: '#4CAF50', // Green - for supporting elements
   accent: '#FF9800', // Orange - for highlights
   subtle: '#E0E0E0', // Gray - for background groupings
@@ -321,7 +323,7 @@ const colors = {
 ### 4. Performance Considerations
 
 - **Large SVGs**: Consider processing in chunks or using simpler curve types
-- **Many entities**: Use focus areas to group related elements
+- **Many entities**: Use highlight areas to group related elements
 - **Complex shapes**: Higher concavity values process faster
 
 ### 5. Troubleshooting Common Issues
@@ -355,7 +357,7 @@ svg-annotator MyEntity --concavity 5 --padding 10
 ## Next Steps
 
 - Explore the [API Reference](../README.md#library-api) for detailed method documentation
-- Check out the [Focus Areas Guide](../README.md#focus-areas-configuration) for advanced YAML configurations
+- Check out the [Highlight Areas Guide](../README.md#highlight-areas-configuration) for advanced YAML configurations
 - Browse the test files in `test/` for more code examples
 - Contribute to the project by adding new curve types or visual effects
 
