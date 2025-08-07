@@ -30,6 +30,159 @@ export class SVGRenderer {
   } as const;
 
   /**
+   * Parse SVG viewBox and dimensions
+   */
+  private parseSvgDimensions(svgTag: string): {
+    viewBox?: { x: number; y: number; width: number; height: number };
+    width?: number;
+    height?: number;
+  } {
+    const result: any = {};
+
+    // Extract viewBox
+    const viewBoxMatch = svgTag.match(/viewBox=["']([^"']+)["']/);
+    if (viewBoxMatch) {
+      const [x, y, width, height] = viewBoxMatch[1]
+        .split(/\s+/)
+        .map(parseFloat);
+      result.viewBox = { x, y, width, height };
+    }
+
+    // Extract width and height
+    const widthMatch = svgTag.match(/width=["']([^"']+)["']/);
+    const heightMatch = svgTag.match(/height=["']([^"']+)["']/);
+    if (widthMatch) result.width = parseFloat(widthMatch[1]);
+    if (heightMatch) result.height = parseFloat(heightMatch[1]);
+
+    return result;
+  }
+
+  /**
+   * Calculate bounds of all new elements (hulls and text)
+   */
+  private calculateNewElementsBounds(
+    results: SVGRenderResult[],
+    textPositions: Array<{
+      name: string;
+      position: Point;
+      description?: string;
+    }>
+  ): BoundingBox {
+    let minX = Infinity,
+      minY = Infinity,
+      maxX = -Infinity,
+      maxY = -Infinity;
+
+    // Include hull points
+    for (const result of results) {
+      for (const point of result.points) {
+        minX = Math.min(minX, point.x);
+        minY = Math.min(minY, point.y);
+        maxX = Math.max(maxX, point.x);
+        maxY = Math.max(maxY, point.y);
+      }
+    }
+
+    // Include text label bounds
+    for (const textPos of textPositions) {
+      const fontSize = parseInt(SVGRenderer.TEXT_STYLE.fontSize);
+      const fontFamily = SVGRenderer.TEXT_STYLE.fontFamily;
+
+      // Calculate text dimensions including description
+      const nameLines = textPos.name.split(/\r?\n/);
+      const descriptionLines = textPos.description
+        ? textPos.description.split(/\r?\n/)
+        : [];
+
+      const nameHeight = nameLines.length * fontSize * 1.2;
+      const descHeight = descriptionLines.length * fontSize * 0.7 * 1.2;
+      const totalHeight =
+        nameHeight + (textPos.description ? 3 : 0) + descHeight;
+
+      // Estimate text width (rough approximation)
+      const maxLineWidth = Math.max(
+        ...nameLines.map((line) => line.length * fontSize * 0.6),
+        ...descriptionLines.map((line) => line.length * fontSize * 0.7 * 0.6)
+      );
+
+      const halfWidth = maxLineWidth / 2;
+      const halfHeight = totalHeight / 2;
+
+      minX = Math.min(minX, textPos.position.x - halfWidth);
+      minY = Math.min(minY, textPos.position.y - halfHeight);
+      maxX = Math.max(maxX, textPos.position.x + halfWidth);
+      maxY = Math.max(maxY, textPos.position.y + halfHeight);
+    }
+
+    return {
+      x: minX,
+      y: minY,
+      width: maxX - minX,
+      height: maxY - minY,
+    };
+  }
+
+  /**
+   * Adjust SVG tag to accommodate new elements
+   */
+  private adjustSvgViewport(
+    svgTag: string,
+    newBounds: BoundingBox,
+    padding: number = 20
+  ): string {
+    const dimensions = this.parseSvgDimensions(svgTag);
+
+    // Calculate required viewBox
+    let finalViewBox: { x: number; y: number; width: number; height: number };
+
+    if (dimensions.viewBox) {
+      // Extend existing viewBox
+      const current = dimensions.viewBox;
+      const minX = Math.min(current.x, newBounds.x - padding);
+      const minY = Math.min(current.y, newBounds.y - padding);
+      const maxX = Math.max(
+        current.x + current.width,
+        newBounds.x + newBounds.width + padding
+      );
+      const maxY = Math.max(
+        current.y + current.height,
+        newBounds.y + newBounds.height + padding
+      );
+
+      finalViewBox = {
+        x: minX,
+        y: minY,
+        width: maxX - minX,
+        height: maxY - minY,
+      };
+    } else {
+      // Create new viewBox from scratch
+      finalViewBox = {
+        x: newBounds.x - padding,
+        y: newBounds.y - padding,
+        width: newBounds.width + 2 * padding,
+        height: newBounds.height + 2 * padding,
+      };
+    }
+
+    // Update the SVG tag
+    let updatedTag = svgTag;
+
+    // Update or add viewBox
+    const viewBoxStr = `${finalViewBox.x} ${finalViewBox.y} ${finalViewBox.width} ${finalViewBox.height}`;
+    if (dimensions.viewBox) {
+      updatedTag = updatedTag.replace(
+        /viewBox=["'][^"']*["']/,
+        `viewBox="${viewBoxStr}"`
+      );
+    } else {
+      updatedTag = updatedTag.replace(/<svg/, `<svg viewBox="${viewBoxStr}"`);
+    }
+
+    return updatedTag;
+  }
+
+  /**
    * Create a text or tspan element for single/multi-line text
    */
   private createTextLines(
@@ -276,6 +429,11 @@ export class SVGRenderer {
     const filterConfigs: Array<{ id: string; config: any; name: string }> = [];
     const splinePaths: string[] = [];
     const textLabels: string[] = [];
+    const textPositions: Array<{
+      name: string;
+      position: Point;
+      description?: string;
+    }> = [];
 
     // Initialize collision detection if parser is provided
     let collisionDetector: TextCollisionDetector | null = null;
@@ -366,6 +524,13 @@ export class SVGRenderer {
         });
       }
 
+      // Store text position for viewport calculation
+      textPositions.push({
+        name: result.name,
+        position: position,
+        description: result.description,
+      });
+
       const textElement = this.createTextElement(
         result.name,
         position,
@@ -379,6 +544,20 @@ export class SVGRenderer {
     // Generate defs section with all watercolor filters
     const defsSection = WatercolorFilters.generateDefsSection(filterConfigs);
 
-    return `${beforePath}\n${defsSection}\n${splinePaths.join('\n')}\n${textLabels.join('\n')}\n${afterPath}`;
+    // Calculate bounds of all new elements and adjust viewport if necessary
+    const newElementsBounds = this.calculateNewElementsBounds(
+      sortedResults,
+      textPositions
+    );
+    const adjustedSvgTag = this.adjustSvgViewport(
+      openingSvgTag,
+      newElementsBounds
+    );
+
+    // Update beforePath with adjusted SVG tag
+    const adjustedBeforePath =
+      svgContent.substring(0, svgMatch.index!) + adjustedSvgTag;
+
+    return `${adjustedBeforePath}\n${defsSection}\n${splinePaths.join('\n')}\n${textLabels.join('\n')}\n${afterPath}`;
   }
 }
