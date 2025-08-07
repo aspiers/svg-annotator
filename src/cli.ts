@@ -95,9 +95,24 @@ HIGHLIGHT AREAS:
     name: Highlight area identifier (used as argument)
     description: Human-readable description
     color: Color for the hull fill (hex like #FF0000, named like "pink", or RGB)
-    areas: Array of entity names to include
+    areas: Optional array of entity names to include (from data-entity attributes)
+    links: Optional array of link specifiers to include in hull calculations
     url: Optional URL to hyperlink the highlight area (makes hull clickable)
     tooltip: Optional tooltip text shown on hover
+  Note: Each highlight area must have at least one item in "areas" or "links" (or both).
+
+LINK SUPPORT (PlantUML ERDs):
+  Links between entities can be specified in highlight areas using:
+    links:
+      - link_Entity1_Entity2              # Direct link ID
+      - Entity1-Entity2                   # Entity pair (all links)
+      - Entity1-Entity2:labelText         # Specific link by entity pair + label
+      - Entity1-Entity2:*pattern*         # Entity pair + label pattern
+      - "designs"                         # Link label text
+      - "*design*"                        # Pattern matching
+  When multiple links exist between same entities, use Entity-Pair:label format.
+  Links are automatically detected from PlantUML relationship elements.
+  Each link includes connection paths, arrowheads, and relationship labels.
 
 The tool outputs SVG with smooth spline curve overlay.`
       );

@@ -91,12 +91,20 @@ export class AnnotationService {
     );
 
     if (options.verbose) {
+      const entitiesInfo =
+        entities.length > 0 ? `entities: ${entities.join(', ')}` : '';
+      const linksInfo = links.length > 0 ? `links: ${links.join(', ')}` : '';
+      const combinedInfo = [entitiesInfo, linksInfo].filter(Boolean).join(', ');
+
       console.error(
         `Processing highlight area "${highlightAreaName}" with ${combinedInfo}`
       );
     }
 
-    const points = parser.extractPointsFromEntityGroups(entities);
+    const points = parser.extractPointsFromEntityGroupsAndLinks(
+      entities,
+      links
+    );
     const hull = this.calculateHull(points, options, highlightAreaName);
 
     return {

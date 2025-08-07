@@ -155,10 +155,43 @@ Highlight areas allow you to define reusable entity groupings with custom colors
 
 - `name`: Identifier used as CLI argument
 - `color`: Hull fill color (hex, named color, or RGB)
-- `areas`: Array of entity names to include
+- `areas`: Array of entity names to include (from `data-entity` attributes)
+- `links` (optional): Array of link IDs to include (from `data-link` attributes)
 - `description` (optional): Smaller subtitle text rendered below the name
 - `url` (optional): Makes the hull clickable
 - `tooltip` (optional): Tooltip text shown on hover over the hull area
+
+### Link Support
+
+You can now highlight connections between elements by marking them with `data-link` attributes:
+
+```xml
+<!-- Single line link -->
+<line data-link="user-to-role" x1="100" y1="50" x2="200" y2="75" stroke="black"/>
+
+<!-- Path-based connection -->
+<path data-link="flow-connection" d="M10,10 Q50,30 90,10" stroke="blue" fill="none"/>
+
+<!-- Link group with multiple elements -->
+<g data-link="complex-connection">
+  <path d="M10,10 L50,50" stroke="red"/>
+  <circle cx="50" cy="50" r="3" fill="red"/>
+</g>
+```
+
+Include links in highlight areas:
+
+```yaml
+# highlight-areas.yml
+- name: UserFlow
+  color: lightblue
+  areas:
+    - User
+    - Dashboard
+  links:
+    - user-to-dashboard
+    - navigation-links
+```
 
 ## Library API
 

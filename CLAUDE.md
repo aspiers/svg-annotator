@@ -81,14 +81,30 @@ Uses Node.js built-in test runner with tests in `test/`:
 </g>
 ```
 
+**Links** can be marked with `data-link` attributes:
+
+```xml
+<!-- Single element links -->
+<line data-link="connection1" x1="10" y1="10" x2="50" y2="50"/>
+<path data-link="flow1" d="M10,10 Q30,20 50,10"/>
+
+<!-- Link groups -->
+<g data-link="complex-link">
+  <path d="M10,10 L50,50"/>
+  <circle cx="50" cy="50" r="3"/>
+</g>
+```
+
 ### Highlight Areas Configuration
 
 YAML-based entity grouping system supporting:
 
 - Custom colors and labels
+- Entity groups (via `data-entity` attributes)
+- Link connections (via `data-link` attributes)
 - Pattern matching (e.g., `Impact*`)
 - Clickable URLs
-- Reusable entity configurations
+- Reusable configurations
 
 ### Key Design Patterns
 

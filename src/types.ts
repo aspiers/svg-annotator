@@ -26,9 +26,30 @@ export interface HighlightArea {
   name: string;
   description?: string;
   color: string;
-  areas: string[];
+  areas?: string[];
+  links?: string[];
   url?: string;
   tooltip?: string;
+}
+
+export interface LinkElement {
+  linkId: string;
+  sourceEntity: string;
+  targetEntity: string;
+  label?: string;
+  elements: SVGElement[];
+  boundingBox: BoundingBox;
+  points: Point[];
+}
+
+export interface LinkGroup {
+  linkId: string;
+  sourceEntity: string;
+  targetEntity: string;
+  label?: string;
+  elements: SVGElement[];
+  boundingBox: BoundingBox;
+  points: Point[];
 }
 
 export interface ConcaveHullResult {
