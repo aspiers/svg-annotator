@@ -49,8 +49,10 @@ export class HighlightAreaParser {
           );
         }
         // Validate that at least areas or links are provided
-        const hasAreas = area.areas && Array.isArray(area.areas) && area.areas.length > 0;
-        const hasLinks = area.links && Array.isArray(area.links) && area.links.length > 0;
+        const hasAreas =
+          area.areas && Array.isArray(area.areas) && area.areas.length > 0;
+        const hasLinks =
+          area.links && Array.isArray(area.links) && area.links.length > 0;
         if (!hasAreas && !hasLinks) {
           throw new Error(
             `Highlight area "${area.name}" must have either "areas" or "links" (or both) with at least one item`
@@ -174,12 +176,19 @@ export class HighlightAreaParser {
    */
   static validateLinks(
     highlightAreas: HighlightArea[],
-    availableLinks: Array<{linkId: string; sourceEntity: string; targetEntity: string; label?: string}>
+    availableLinks: Array<{
+      linkId: string;
+      sourceEntity: string;
+      targetEntity: string;
+      label?: string;
+    }>
   ): string[] {
     const validationErrors: string[] = [];
-    const availableLinkIds = new Set(availableLinks.map(l => l.linkId));
-    const entityPairs = new Set(availableLinks.map(l => `${l.sourceEntity}-${l.targetEntity}`));
-    const labels = new Set(availableLinks.map(l => l.label).filter(Boolean));
+    const availableLinkIds = new Set(availableLinks.map((l) => l.linkId));
+    const entityPairs = new Set(
+      availableLinks.map((l) => `${l.sourceEntity}-${l.targetEntity}`)
+    );
+    const labels = new Set(availableLinks.map((l) => l.label).filter(Boolean));
 
     for (const area of highlightAreas) {
       if (!area.links) continue;
@@ -202,11 +211,15 @@ export class HighlightAreaParser {
 
         // Check if it's a pattern
         if (linkSpec.includes('*')) {
-          const regex = new RegExp('^' + linkSpec.replace(/\*/g, '.*') + '$', 'i');
-          const hasMatch = availableLinks.some(link => 
-            regex.test(link.linkId) ||
-            regex.test(`${link.sourceEntity}-${link.targetEntity}`) ||
-            (link.label && regex.test(link.label))
+          const regex = new RegExp(
+            '^' + linkSpec.replace(/\*/g, '.*') + '$',
+            'i'
+          );
+          const hasMatch = availableLinks.some(
+            (link) =>
+              regex.test(link.linkId) ||
+              regex.test(`${link.sourceEntity}-${link.targetEntity}`) ||
+              (link.label && regex.test(link.label))
           );
           if (hasMatch) {
             continue;

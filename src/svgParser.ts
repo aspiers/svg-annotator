@@ -398,20 +398,20 @@ export class SVGParser {
     const linkElement = this.svgElement.querySelector(`g.link[id="${linkId}"]`);
     return linkElement;
   }
-  
+
   /**
    * Find all link elements with a given ID (handles duplicate IDs)
    */
   findAllLinkElementsById(linkId: string): Element[] {
     const allLinks = this.svgElement.querySelectorAll('g.link');
     const matchingLinks: Element[] = [];
-    
+
     for (const link of allLinks) {
       if (link.getAttribute('id') === linkId) {
         matchingLinks.push(link);
       }
     }
-    
+
     return matchingLinks;
   }
 
@@ -425,7 +425,7 @@ export class SVGParser {
     for (const link of allLinks) {
       const sourceEntity = link.getAttribute('data-entity-1');
       const targetEntity = link.getAttribute('data-entity-2');
-      
+
       // Check both directions
       if (
         (sourceEntity === entity1 && targetEntity === entity2) ||
@@ -448,7 +448,10 @@ export class SVGParser {
     for (const link of allLinks) {
       const textElements = link.querySelectorAll('text');
       for (const text of textElements) {
-        if (text.textContent && text.textContent.toLowerCase().includes(labelText.toLowerCase())) {
+        if (
+          text.textContent &&
+          text.textContent.toLowerCase().includes(labelText.toLowerCase())
+        ) {
           linkElements.push(link);
           break;
         }
@@ -471,15 +474,18 @@ export class SVGParser {
    */
   extractPointsFromLink(linkSpec: string): Point[] {
     let linkElement: Element | null = null;
-    
+
     // Check if this is a composite ID with UID
     const uidMatch = linkSpec.match(/^(.+)\[(.+)\]$/);
     if (uidMatch) {
       const [, linkId, uid] = uidMatch;
       const allLinks = this.svgElement.querySelectorAll('g.link');
-      
+
       for (const link of allLinks) {
-        if (link.getAttribute('id') === linkId && link.getAttribute('data-uid') === uid) {
+        if (
+          link.getAttribute('id') === linkId &&
+          link.getAttribute('data-uid') === uid
+        ) {
           linkElement = link;
           break;
         }
@@ -488,7 +494,7 @@ export class SVGParser {
       // Simple ID lookup
       linkElement = this.findLinkElement(linkSpec);
     }
-    
+
     if (!linkElement) {
       throw new Error(`Link "${linkSpec}" not found`);
     }
@@ -501,7 +507,7 @@ export class SVGParser {
    */
   private extractPointsFromLinkElement(linkElement: Element): Point[] {
     const points: Point[] = [];
-    
+
     // Extract points from path elements
     const pathElements = linkElement.querySelectorAll('path');
     for (const path of pathElements) {
@@ -519,7 +525,7 @@ export class SVGParser {
       const y1 = parseFloat(line.getAttribute('y1') || '0');
       const x2 = parseFloat(line.getAttribute('x2') || '0');
       const y2 = parseFloat(line.getAttribute('y2') || '0');
-      
+
       // Add intermediate points along the line for better hull coverage
       const steps = 5;
       for (let i = 0; i <= steps; i++) {
@@ -549,15 +555,18 @@ export class SVGParser {
    */
   private parsePolygonPoints(pointsAttr: string): Point[] {
     const points: Point[] = [];
-    const coords = pointsAttr.split(/[\s,]+/).map(s => parseFloat(s)).filter(n => !isNaN(n));
-    
+    const coords = pointsAttr
+      .split(/[\s,]+/)
+      .map((s) => parseFloat(s))
+      .filter((n) => !isNaN(n));
+
     for (let i = 0; i < coords.length - 1; i += 2) {
       points.push({
         x: coords[i],
-        y: coords[i + 1]
+        y: coords[i + 1],
       });
     }
-    
+
     return points;
   }
 
@@ -613,15 +622,18 @@ export class SVGParser {
    */
   getLinkInfo(linkSpec: string): LinkGroup {
     let linkElement: Element | null = null;
-    
+
     // Check if this is a composite ID with UID
     const uidMatch = linkSpec.match(/^(.+)\[(.+)\]$/);
     if (uidMatch) {
       const [, linkId, uid] = uidMatch;
       const allLinks = this.svgElement.querySelectorAll('g.link');
-      
+
       for (const link of allLinks) {
-        if (link.getAttribute('id') === linkId && link.getAttribute('data-uid') === uid) {
+        if (
+          link.getAttribute('id') === linkId &&
+          link.getAttribute('data-uid') === uid
+        ) {
           linkElement = link;
           break;
         }
@@ -630,20 +642,20 @@ export class SVGParser {
       // Simple ID lookup
       linkElement = this.findLinkElement(linkSpec);
     }
-    
+
     if (!linkElement) {
       throw new Error(`Link "${linkSpec}" not found`);
     }
 
     const sourceEntity = linkElement.getAttribute('data-entity-1') || '';
     const targetEntity = linkElement.getAttribute('data-entity-2') || '';
-    
+
     // Extract label from text elements
     let label: string | undefined;
     const textElements = linkElement.querySelectorAll('text');
     if (textElements.length > 0) {
       label = Array.from(textElements)
-        .map(text => text.textContent || '')
+        .map((text) => text.textContent || '')
         .join(' ')
         .trim();
     }
@@ -689,7 +701,7 @@ export class SVGParser {
 
     for (const linkSpec of linkSpecs) {
       const matchingLinks = this.findLinksBySpecification(linkSpec);
-      
+
       if (matchingLinks.length === 0) {
         notFoundLinks.push(linkSpec);
       } else {
@@ -741,25 +753,27 @@ export class SVGParser {
       const linkId = element.getAttribute('id') || '';
       const sourceEntity = element.getAttribute('data-entity-1') || '';
       const targetEntity = element.getAttribute('data-entity-2') || '';
-      
+
       // Get label text
       let label = '';
       const textElements = element.querySelectorAll('text');
       if (textElements.length > 0) {
         label = Array.from(textElements)
-          .map(text => text.textContent || '')
+          .map((text) => text.textContent || '')
           .join(' ')
           .trim();
       }
 
       // Check if pattern matches link ID, entity names, or label
       const regex = new RegExp(pattern.replace(/\*/g, '.*'), 'i');
-      if (regex.test(linkId) || 
-          regex.test(sourceEntity) || 
-          regex.test(targetEntity) || 
-          regex.test(label) ||
-          regex.test(`${sourceEntity}-${targetEntity}`) ||
-          regex.test(`${targetEntity}-${sourceEntity}`)) {
+      if (
+        regex.test(linkId) ||
+        regex.test(sourceEntity) ||
+        regex.test(targetEntity) ||
+        regex.test(label) ||
+        regex.test(`${sourceEntity}-${targetEntity}`) ||
+        regex.test(`${targetEntity}-${sourceEntity}`)
+      ) {
         matchingLinks.push(linkId);
       }
     }
@@ -772,10 +786,13 @@ export class SVGParser {
    * Supports format: "Entity1-Entity2:labelText" or "Entity1-Entity2:*pattern*"
    * Returns unique identifiers that can distinguish between multiple links with same ID
    */
-  findLinksByEntityPairAndLabel(entityPair: string, labelPattern: string): string[] {
+  findLinksByEntityPairAndLabel(
+    entityPair: string,
+    labelPattern: string
+  ): string[] {
     const matchingLinks: string[] = [];
     const allLinkElements = this.svgElement.querySelectorAll('g.link');
-    
+
     // Parse entity pair (support both directions)
     const [entity1, entity2] = entityPair.split('-');
     if (!entity1 || !entity2) {
@@ -785,32 +802,32 @@ export class SVGParser {
     for (const element of allLinkElements) {
       const sourceEntity = element.getAttribute('data-entity-1') || '';
       const targetEntity = element.getAttribute('data-entity-2') || '';
-      
+
       // Check if entities match (either direction)
-      const entitiesMatch = 
+      const entitiesMatch =
         (sourceEntity === entity1 && targetEntity === entity2) ||
         (sourceEntity === entity2 && targetEntity === entity1);
-        
+
       if (!entitiesMatch) {
         continue;
       }
-      
+
       // Get label text
       let label = '';
       const textElements = element.querySelectorAll('text');
       if (textElements.length > 0) {
         label = Array.from(textElements)
-          .map(text => text.textContent || '')
+          .map((text) => text.textContent || '')
           .join(' ')
           .trim();
       }
-      
+
       // Check if label matches pattern
       const regex = new RegExp(labelPattern.replace(/\*/g, '.*'), 'i');
       if (regex.test(label)) {
         const linkId = element.getAttribute('id') || '';
         const uid = element.getAttribute('data-uid') || '';
-        
+
         // Create a unique identifier combining ID and UID for disambiguation
         const uniqueId = uid ? `${linkId}[${uid}]` : linkId;
         matchingLinks.push(uniqueId);
@@ -836,36 +853,44 @@ export class SVGParser {
       const colonIndex = linkSpec.indexOf(':');
       const entityPart = linkSpec.substring(0, colonIndex);
       const labelPart = linkSpec.substring(colonIndex + 1);
-      
+
       // Only treat as entity-pair:label if entity part looks like "Entity1-Entity2"
       if (entityPart.includes('-') && !entityPart.startsWith('link_')) {
         return this.findLinksByEntityPairAndLabel(entityPart, labelPart);
       }
     }
-    
+
     // Try direct link ID first
     const directLink = this.findLinkElement(linkSpec);
     if (directLink) {
       const linkId = directLink.getAttribute('id');
       return linkId ? [linkId] : [];
     }
-    
+
     // Try entity pair format (without colon)
-    if (linkSpec.includes('-') && !linkSpec.startsWith('link_') && !linkSpec.includes('*')) {
+    if (
+      linkSpec.includes('-') &&
+      !linkSpec.startsWith('link_') &&
+      !linkSpec.includes('*')
+    ) {
       const [entity1, entity2] = linkSpec.split('-');
       if (entity1 && entity2) {
         const links = this.findLinksByEntityNames(entity1, entity2);
-        return links.map(link => link.getAttribute('id') || '').filter(Boolean);
+        return links
+          .map((link) => link.getAttribute('id') || '')
+          .filter(Boolean);
       }
     }
-    
+
     // Try pattern matching or label matching
     if (linkSpec.includes('*')) {
       return this.findLinksByPattern(linkSpec);
     } else {
       // Try label matching
       const labelLinks = this.findLinksByLabel(linkSpec);
-      return labelLinks.map(link => link.getAttribute('id') || '').filter(Boolean);
+      return labelLinks
+        .map((link) => link.getAttribute('id') || '')
+        .filter(Boolean);
     }
   }
 
@@ -902,21 +927,31 @@ export class SVGParser {
   /**
    * Get all available link IDs with their metadata
    */
-  getAllLinkInfo(): Array<{linkId: string; sourceEntity: string; targetEntity: string; label?: string}> {
+  getAllLinkInfo(): Array<{
+    linkId: string;
+    sourceEntity: string;
+    targetEntity: string;
+    label?: string;
+  }> {
     const allLinks = this.svgElement.querySelectorAll('g.link');
-    const linkInfo: Array<{linkId: string; sourceEntity: string; targetEntity: string; label?: string}> = [];
+    const linkInfo: Array<{
+      linkId: string;
+      sourceEntity: string;
+      targetEntity: string;
+      label?: string;
+    }> = [];
 
     for (const link of allLinks) {
       const linkId = link.getAttribute('id') || '';
       const sourceEntity = link.getAttribute('data-entity-1') || '';
       const targetEntity = link.getAttribute('data-entity-2') || '';
-      
+
       // Extract label from text elements
       let label: string | undefined;
       const textElements = link.querySelectorAll('text');
       if (textElements.length > 0) {
         label = Array.from(textElements)
-          .map(text => text.textContent || '')
+          .map((text) => text.textContent || '')
           .join(' ')
           .trim();
         if (label === '') label = undefined;
@@ -926,7 +961,7 @@ export class SVGParser {
         linkId,
         sourceEntity,
         targetEntity,
-        label
+        label,
       });
     }
 
