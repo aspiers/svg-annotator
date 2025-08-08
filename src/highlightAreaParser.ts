@@ -73,101 +73,45 @@ export class HighlightAreaParser {
     }
   }
 
-  static getEntitiesForHighlightArea(
+  /**
+   * Filter highlight areas by name patterns
+   * Supports exact matches and wildcard patterns (e.g., "Impact*")
+   * @param highlightAreas All available highlight areas
+   * @param filters Array of filter patterns to match against
+   * @returns Filtered highlight areas that match any of the filters
+   */
+  static filterHighlightAreas(
     highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string[] {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
+    filters: string[]
+  ): HighlightArea[] {
+    if (filters.length === 0) {
+      return highlightAreas;
     }
-    return highlightArea.areas || [];
+
+    return highlightAreas.filter((area) => {
+      return filters.some((filter) => {
+        // Exact match
+        if (filter === area.name) {
+          return true;
+        }
+        // Pattern matching with wildcards
+        if (filter.includes('*')) {
+          const regex = new RegExp(
+            '^' + filter.replace(/\*/g, '.*') + '$',
+            'i'
+          );
+          return regex.test(area.name);
+        }
+        return false;
+      });
+    });
   }
 
-  static getColorForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
-    }
-    return ColorUtils.toHex(highlightArea.color);
-  }
-
-  static getUrlForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string | undefined {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
-    }
-    return highlightArea.url;
-  }
-
-  static getDescriptionForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string | undefined {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
-    }
-    return highlightArea.description;
-  }
-
-  static getTooltipForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string | undefined {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
-    }
-    return highlightArea.tooltip;
-  }
-
-  static listAvailableHighlightAreas(
-    highlightAreas: HighlightArea[]
-  ): string[] {
+  /**
+   * Get all unique area names from highlight areas
+   */
+  static getAllAreaNames(highlightAreas: HighlightArea[]): string[] {
     return highlightAreas.map((area) => area.name);
-  }
-
-  static getLinksForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): string[] {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      throw new Error(`Highlight area "${highlightAreaName}" not found`);
-    }
-    return highlightArea.links || [];
-  }
-
-  static hasLinksForHighlightArea(
-    highlightAreas: HighlightArea[],
-    highlightAreaName: string
-  ): boolean {
-    const highlightArea = highlightAreas.find(
-      (area) => area.name === highlightAreaName
-    );
-    if (!highlightArea) {
-      return false;
-    }
-    return Array.isArray(highlightArea.links) && highlightArea.links.length > 0;
   }
 
   /**

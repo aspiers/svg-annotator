@@ -144,15 +144,27 @@ export class SVGAnnotator {
   }
 
   /**
-   * Generate multiple highlight area overlays
+   * Generate multiple highlight area overlays with optional filters
+   * @param highlightAreasFilePath Path to YAML file with highlight areas
+   * @param filters Optional array of filter patterns (supports wildcards)
    */
-  generateHighlightAreaOverlays(highlightAreasFilePath: string) {
+  generateHighlightAreaOverlays(
+    highlightAreasFilePath: string,
+    filters: string[] = []
+  ) {
     const highlightAreas = HighlightAreaParser.parseHighlightAreasFile(
       highlightAreasFilePath
     );
+
+    // Filter areas based on provided patterns
+    const areasToProcess = HighlightAreaParser.filterHighlightAreas(
+      highlightAreas,
+      filters
+    );
+
     const results = [];
 
-    for (const highlightArea of highlightAreas) {
+    for (const highlightArea of areasToProcess) {
       const overlay = this.generateHullOverlay(highlightArea.areas || [], {
         color: highlightArea.color,
         enableWatercolor: true,

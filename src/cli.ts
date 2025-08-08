@@ -148,9 +148,9 @@ The tool outputs SVG with smooth spline curve overlay.`
   private loadHighlightAreas(
     options: any,
     entityNames: string[]
-  ): { highlightAreas: HighlightArea[]; highlightAreaNames: string[] } {
+  ): { highlightAreas: HighlightArea[]; highlightAreaFilters: string[] } {
     let highlightAreas: HighlightArea[] = [];
-    let highlightAreaNames: string[] = entityNames;
+    let highlightAreaFilters: string[] = entityNames;
 
     if (options.areas) {
       const areasPath = resolve(options.areas);
@@ -160,26 +160,28 @@ The tool outputs SVG with smooth spline curve overlay.`
 
       highlightAreas = HighlightAreaParser.parseHighlightAreasFile(areasPath);
 
-      // If no highlight area names provided, use all highlight areas
+      // If no filters provided, process all areas (empty filter array means all)
       if (entityNames.length === 0) {
-        highlightAreaNames =
-          HighlightAreaParser.listAvailableHighlightAreas(highlightAreas);
+        highlightAreaFilters = [];
         if (options.verbose) {
+          const allNames = HighlightAreaParser.getAllAreaNames(highlightAreas);
           console.error(
-            `No highlight areas specified, using all: ${highlightAreaNames.join(', ')}`
+            `No highlight areas specified, using all: ${allNames.join(', ')}`
           );
         }
       }
 
       if (options.verbose) {
         console.error(`Highlight areas file: ${areasPath}`);
-        console.error(
-          `Processing highlight area(s): ${highlightAreaNames.join(', ')}`
-        );
+        if (highlightAreaFilters.length > 0) {
+          console.error(
+            `Processing areas matching filter(s): ${highlightAreaFilters.join(', ')}`
+          );
+        }
       }
     }
 
-    return { highlightAreas, highlightAreaNames };
+    return { highlightAreas, highlightAreaFilters };
   }
 
   async run(): Promise<void> {
@@ -193,10 +195,8 @@ The tool outputs SVG with smooth spline curve overlay.`
         this.validateSvgFile(svgPath);
 
         // Load highlight areas configuration
-        const { highlightAreas, highlightAreaNames } = this.loadHighlightAreas(
-          options,
-          entityNames
-        );
+        const { highlightAreas, highlightAreaFilters } =
+          this.loadHighlightAreas(options, entityNames);
 
         if (options.verbose) {
           console.error(`Loading SVG file: ${svgPath}`);
@@ -220,7 +220,7 @@ The tool outputs SVG with smooth spline curve overlay.`
           svgPath,
           entityNames,
           highlightAreas,
-          highlightAreaNames,
+          highlightAreaFilters,
           annotationOptions,
           !!options.areas
         );

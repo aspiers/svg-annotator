@@ -3,6 +3,7 @@ import { SVGParser } from './svgParser.js';
 import { HullCalculator } from './hullCalculator.js';
 import { HullPadding } from './hullPadding.js';
 import { HighlightAreaParser } from './highlightAreaParser.js';
+import { ColorUtils } from './colorUtils.js';
 import { SVGRenderer, SVGRenderResult } from './svgRenderer.js';
 import { Point, CurveType, SplineConfig, HighlightArea } from './types.js';
 
@@ -60,35 +61,13 @@ export class AnnotationService {
   }
 
   private processHighlightArea(
-    highlightAreaName: string,
-    highlightAreas: HighlightArea[],
+    highlightArea: HighlightArea,
     parser: SVGParser,
     options: AnnotationOptions
   ): SVGRenderResult {
-    const entities = HighlightAreaParser.getEntitiesForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
-    const links = HighlightAreaParser.getLinksForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
-    const color = HighlightAreaParser.getColorForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
-    const url = HighlightAreaParser.getUrlForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
-    const description = HighlightAreaParser.getDescriptionForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
-    const tooltip = HighlightAreaParser.getTooltipForHighlightArea(
-      highlightAreas,
-      highlightAreaName
-    );
+    const entities = highlightArea.areas || [];
+    const links = highlightArea.links || [];
+    const color = ColorUtils.toHex(highlightArea.color);
 
     if (options.verbose) {
       const entitiesInfo =
@@ -97,7 +76,7 @@ export class AnnotationService {
       const combinedInfo = [entitiesInfo, linksInfo].filter(Boolean).join(', ');
 
       console.error(
-        `Processing highlight area "${highlightAreaName}" with ${combinedInfo}`
+        `Processing highlight area "${highlightArea.name}" with ${combinedInfo}`
       );
     }
 
@@ -105,17 +84,17 @@ export class AnnotationService {
       entities,
       links
     );
-    const hull = this.calculateHull(points, options, highlightAreaName);
+    const hull = this.calculateHull(points, options, highlightArea.name);
 
     return {
-      name: highlightAreaName,
+      name: highlightArea.name,
       points: hull.points,
       area: hull.area,
       perimeter: hull.perimeter,
       color,
-      url,
-      description,
-      tooltip,
+      url: highlightArea.url,
+      description: highlightArea.description,
+      tooltip: highlightArea.tooltip,
     };
   }
 
@@ -149,7 +128,7 @@ export class AnnotationService {
     svgPath: string,
     entityNames: string[],
     highlightAreas: HighlightArea[],
-    highlightAreaNames: string[],
+    highlightAreaFilters: string[],
     options: AnnotationOptions,
     useAreasMode: boolean
   ): string {
@@ -160,16 +139,21 @@ export class AnnotationService {
     const results: SVGRenderResult[] = [];
 
     if (useAreasMode) {
-      // Process each highlight area separately
-      for (const highlightAreaName of highlightAreaNames) {
-        results.push(
-          this.processHighlightArea(
-            highlightAreaName,
-            highlightAreas,
-            parser,
-            options
-          )
+      // Filter highlight areas based on provided filters
+      const areasToProcess = HighlightAreaParser.filterHighlightAreas(
+        highlightAreas,
+        highlightAreaFilters
+      );
+
+      if (areasToProcess.length === 0 && highlightAreaFilters.length > 0) {
+        throw new Error(
+          `No highlight areas found matching filters: ${highlightAreaFilters.join(', ')}`
         );
+      }
+
+      // Process each filtered highlight area
+      for (const highlightArea of areasToProcess) {
+        results.push(this.processHighlightArea(highlightArea, parser, options));
       }
     } else {
       // Process single entity group (original behavior)
